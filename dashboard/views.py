@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.http import HttpResponse
+import qrcode, io
 WEB_QR_STORE=[
  {'id':'STR-001','name':'Hotel Cap','category':'Merchandise','price':3500,'stock':12,'qr_generated':True,'active':True,'last_scanned':'5 minutes ago'},
  {'id':'STR-002','name':'HAIDWARE Tote Bag','category':'Merchandise','price':4500,'stock':8,'qr_generated':True,'active':True,'last_scanned':'22 minutes ago'},
@@ -75,7 +77,22 @@ def devices(request):
 def staff(request):
  c=base('Staff Access','STAFF ACCESS','Manage hotel staff roles and future access permissions.'); c['staff_members']=STAFF; return render(request,'dashboard/staff.html',c)
 def web_qr_operation(request):
- active=[i for i in WEB_QR_STORE if i['active']]; qr=[i for i in WEB_QR_STORE if i['qr_generated']]
- c=base('Web QR Operation','WEB QR OPERATION','Manage store-listed items visible via QR scan — control stock, generate QR codes and toggle item availability.')
- c.update(items=WEB_QR_STORE,categories=['All','Merchandise','Consumables','Personal Care'],metrics=[{'value':len(WEB_QR_STORE),'label':'Total Items'},{'value':len(active),'label':'Active Items'},{'value':len(qr),'label':'QR Codes Generated'},{'value':len([i for i in WEB_QR_STORE if i['stock']==0]),'label':'Out of Stock'}]); return render(request,'dashboard/web_qr_operation.html',c)
+ rooms=[{'id':d['id'],'location':d['location'],'type':d['type'],'online':d['online'],'active':d['active']} for d in DEVICES]
+ active=[r for r in rooms if r['active']]
+ c=base('Web QR Operation','WEB QR OPERATION','Each room has a unique QR code that links guests directly to the web device page — where they can browse menus, order, and pay.')
+ c.update(rooms=rooms,metrics=[{'value':len(rooms),'label':'Total Rooms'},{'value':len(active),'label':'Active Rooms'},{'value':len([r for r in rooms if r['online']]),'label':'Online Now'},{'value':len([r for r in rooms if not r['active']]),'label':'QR Disabled'}]); return render(request,'dashboard/web_qr_operation.html',c)
+
+def qr_code(request, room_id):
+ room_id_clean=room_id.replace('..','/').strip()
+ guest_url=request.build_absolute_uri(f'/guest/{room_id_clean}/')
+ img=qrcode.make(guest_url)
+ buf=io.BytesIO(); img.save(buf,'PNG'); buf.seek(0)
+ return HttpResponse(buf.read(),content_type='image/png')
+
+def guest_device(request, room_id):
+ room=next((d for d in DEVICES if d['id']==room_id),None)
+ all_menu=KITCHEN+BAR; available_menu=[x for x in all_menu if x['available']]
+ available_services=[s for s in SERVICES if s['available']]
+ c={'page_title':f"{room['location'] if room else room_id} — Guest Device",'room':room,'room_id':room_id,'menu_items':available_menu,'services':available_services}
+ return render(request,'dashboard/guest_device.html',c)
 def settings_page(request): return render(request,'dashboard/settings.html',base('Settings','SYSTEM SETTINGS','Configure hotel identity, future integrations and IoT operating rules.'))

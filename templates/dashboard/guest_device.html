@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %} — HAIDWARE Smart Hotel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, Arial, sans-serif; }
+    :root { --purple: #2d0b47; --soft: #f1e8f8; --line: #eadff0; --green: #16a34a; }
+    body { background: #fbf8ff; color: #2a0b46; min-height: 100vh; }
+
+    .guest-header {
+      background: var(--purple); color: white;
+      padding: 24px 20px; text-align: center;
+    }
+    .guest-header h1 { font-size: 26px; letter-spacing: 0.5px; }
+    .guest-header p { font-size: 13px; letter-spacing: 6px; color: #ead7ff; margin-top: 4px; }
+    .room-badge {
+      display: inline-block; margin-top: 14px;
+      background: rgba(255,255,255,0.15); border-radius: 999px;
+      padding: 8px 20px; font-size: 18px; font-weight: 900;
+    }
+
+    .tabs {
+      display: flex; gap: 0; background: white;
+      border-bottom: 2px solid var(--line); overflow-x: auto;
+    }
+    .tab {
+      flex: 1; min-width: 100px; padding: 16px 10px;
+      border: 0; background: transparent; font-weight: 900;
+      font-size: 15px; color: #71627c; cursor: pointer;
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+    }
+    .tab.active { color: #6d2992; border-bottom-color: #6d2992; }
+
+    .tab-content { display: none; padding: 24px 16px; }
+    .tab-content.active { display: block; }
+
+    .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (min-width: 480px) { .item-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .item-card {
+      background: white; border: 1px solid var(--line);
+      border-radius: 20px; padding: 18px; text-align: center;
+    }
+    .item-card h4 { font-size: 15px; margin-bottom: 6px; }
+    .item-card .price { font-size: 20px; font-weight: 900; color: #6d2992; margin-bottom: 4px; }
+    .item-card .cat { font-size: 12px; color: #71627c; margin-bottom: 14px; }
+    .item-card button {
+      width: 100%; background: #6d2992; color: white;
+      border: 0; border-radius: 14px; padding: 11px;
+      font-weight: 900; font-size: 14px; cursor: pointer;
+    }
+
+    .service-list { display: grid; gap: 12px; }
+    .service-item {
+      background: white; border: 1px solid var(--line);
+      border-radius: 18px; padding: 18px;
+      display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    }
+    .service-item strong { display: block; font-size: 16px; }
+    .service-item span { font-size: 13px; color: #71627c; margin-top: 3px; display: block; }
+    .service-item .price { font-weight: 900; color: #6d2992; white-space: nowrap; }
+    .request-btn {
+      background: #f1e8f8; color: #2a0b46; border: 0;
+      border-radius: 14px; padding: 10px 16px;
+      font-weight: 900; font-size: 13px; cursor: pointer; white-space: nowrap;
+    }
+
+    .cart-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--purple); color: white;
+      padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+      transform: translateY(100%); transition: 0.3s;
+    }
+    .cart-bar.visible { transform: none; }
+    .cart-bar span { font-size: 18px; font-weight: 900; }
+    .cart-bar button { background: white; color: var(--purple); border: 0; border-radius: 14px; padding: 12px 24px; font-weight: 900; font-size: 15px; cursor: pointer; }
+
+    .toast { position: fixed; top: 20px; right: 16px; z-index: 300; background: var(--green); color: white; padding: 12px 18px; border-radius: 14px; font-weight: 900; font-size: 14px; display: none; }
+  </style>
+</head>
+<body>
+
+<div class="guest-header">
+  <h1>HAIDWARE</h1>
+  <p>SMART HOTEL SERVICE</p>
+  <div class="room-badge">📍 {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('menu',this)">🍽️ Kitchen</button>
+  <button class="tab" onclick="showTab('bar',this)">🍹 Bar</button>
+  <button class="tab" onclick="showTab('services',this)">🛎️ Services</button>
+</div>
+
+<div id="menu" class="tab-content active">
+  <div class="item-grid">
+    {% for item in menu_items %}
+      {% if item.id|slice:":3" == "KIT" %}
+        <div class="item-card">
+          <div class="cat">{{ item.category }}</div>
+          <h4>{{ item.name }}</h4>
+          <div class="price">₦{{ item.price|floatformat:0 }}</div>
+          <button onclick="addToCart('{{ item.name }}', {{ item.price }})">Add to Order</button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<div id="bar" class="tab-content">
+  <div class="item-grid">
+    {% for item in menu_items %}
+      {% if item.id|slice:":3" == "BAR" %}
+        <div class="item-card">
+          <div class="cat">{{ item.category }}</div>
+          <h4>{{ item.name }}</h4>
+          <div class="price">₦{{ item.price|floatformat:0 }}</div>
+          <button onclick="addToCart('{{ item.name }}', {{ item.price }})">Add to Order</button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<div id="services" class="tab-content">
+  <div class="service-list">
+    {% for svc in services %}
+      <div class="service-item">
+        <div>
+          <strong>{{ svc.name }}</strong>
+          <span>{{ svc.note }}</span>
+        </div>
+        <div style="text-align:right">
+          {% if svc.price > 0 %}
+            <div class="price">₦{{ svc.price|floatformat:0 }}</div>
+          {% else %}
+            <div class="price">Free</div>
+          {% endif %}
+          <button class="request-btn" onclick="addToCart('{{ svc.name }}', {{ svc.price }})">Request</button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="cart-bar" id="cartBar">
+  <span id="cartLabel">0 items — ₦0</span>
+  <button onclick="checkout()">Checkout via Paystack</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let cart = [], total = 0;
+
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function addToCart(name, price) {
+    cart.push({name, price});
+    total += price;
+    document.getElementById('cartLabel').textContent = cart.length + ' item' + (cart.length > 1 ? 's' : '') + ' — ₦' + total.toLocaleString();
+    document.getElementById('cartBar').classList.add('visible');
+    showToast(name + ' added to order');
+  }
+
+  function checkout() {
+    if (cart.length === 0) return;
+    showToast('Redirecting to Paystack payment…');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2500);
+  }
+</script>
+</body>
+</html>

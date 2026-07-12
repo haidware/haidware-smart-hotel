@@ -5,75 +5,35 @@
   {% include 'includes/metrics.html' %}
 
   <article class="content-card">
-    <form class="form-grid five">
-      <input placeholder="Item ID e.g. STR-007">
-      <input placeholder="Item Name">
-      <select>
-        <option>Merchandise</option>
-        <option>Consumables</option>
-        <option>Personal Care</option>
-      </select>
-      <input type="number" placeholder="Price (₦)">
-      <button class="primary-btn" type="submit">Add Item</button>
-    </form>
-
-    <div class="filters">
-      {% for cat in categories %}
-        <button class="filter-btn {% if forloop.first %}active{% endif %}" data-filter="{{ cat }}" type="button">{{ cat }}</button>
-      {% endfor %}
+    <div class="card-head">
+      <h3>Room QR Codes</h3>
+      <p class="muted" style="font-size:15px">Each QR links guests directly to the web device page for their room.</p>
     </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Item ID</th>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>QR Code</th>
-            <th>Active</th>
-            <th>Last Scanned</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in items %}
-            <tr class="search-target" data-category="{{ item.category }}">
-              <td><strong>{{ item.id }}</strong></td>
-              <td>{{ item.name }}</td>
-              <td>{{ item.category }}</td>
-              <td>{{ item.price|currency }}</td>
-              <td>
-                {% if item.stock == 0 %}
-                  <span class="pill failed">Out of Stock</span>
-                {% else %}
-                  {{ item.stock }} units
-                {% endif %}
-              </td>
-              <td>
-                <span class="pill {% if item.qr_generated %}paid{% else %}pending{% endif %}">
-                  {% if item.qr_generated %}✓ Generated{% else %}Not Generated{% endif %}
-                </span>
-              </td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" {% if item.active %}checked{% endif %}>
-                  <i></i>
-                  <span>{% if item.active %}Active{% else %}Inactive{% endif %}</span>
-                </label>
-              </td>
-              <td>{{ item.last_scanned }}</td>
-              <td>
-                <button class="mini device-action" data-action="Generate QR" data-device="{{ item.id }}" type="button">Gen QR</button>
-                <button class="mini device-action" data-action="Edit" data-device="{{ item.id }}" type="button">Edit</button>
-                <button class="mini danger device-action" data-action="Remove" data-device="{{ item.id }}" type="button">Remove</button>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="qr-grid">
+      {% for room in rooms %}
+        <div class="qr-card">
+          <div class="qr-code-wrap">
+            <img src="{% url 'dashboard:qr_code' room.id %}" alt="QR for {{ room.location }}" width="160" height="160">
+          </div>
+          <div class="qr-info">
+            <strong>{{ room.location }}</strong>
+            <span>{{ room.type }}</span>
+            <a class="qr-link" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">🔗 Open Guest Page</a>
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <span class="pill {% if room.online %}paid{% else %}failed{% endif %}">{% if room.online %}Online{% else %}Offline{% endif %}</span>
+              <label class="toggle">
+                <input type="checkbox" {% if room.active %}checked{% endif %}>
+                <i></i>
+                <span>{% if room.active %}Active{% else %}Disabled{% endif %}</span>
+              </label>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;">
+              <a class="mini" href="{% url 'dashboard:qr_code' room.id %}" download="QR-{{ room.id }}.png">⬇ Download QR</a>
+              <a class="mini" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">Preview</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
     </div>
   </article>
 {% endblock %}
