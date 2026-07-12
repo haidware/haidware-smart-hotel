@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load dashboard_tags %}
+
+{% block content %}
+  {% include 'includes/metrics.html' %}
+
+  <article class="content-card">
+    <form class="form-grid five">
+      <input placeholder="Item ID e.g. STR-007">
+      <input placeholder="Item Name">
+      <select>
+        <option>Merchandise</option>
+        <option>Consumables</option>
+        <option>Personal Care</option>
+      </select>
+      <input type="number" placeholder="Price (₦)">
+      <button class="primary-btn" type="submit">Add Item</button>
+    </form>
+
+    <div class="filters">
+      {% for cat in categories %}
+        <button class="filter-btn {% if forloop.first %}active{% endif %}" data-filter="{{ cat }}" type="button">{{ cat }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>QR Code</th>
+            <th>Active</th>
+            <th>Last Scanned</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr class="search-target" data-category="{{ item.category }}">
+              <td><strong>{{ item.id }}</strong></td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.category }}</td>
+              <td>{{ item.price|currency }}</td>
+              <td>
+                {% if item.stock == 0 %}
+                  <span class="pill failed">Out of Stock</span>
+                {% else %}
+                  {{ item.stock }} units
+                {% endif %}
+              </td>
+              <td>
+                <span class="pill {% if item.qr_generated %}paid{% else %}pending{% endif %}">
+                  {% if item.qr_generated %}✓ Generated{% else %}Not Generated{% endif %}
+                </span>
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" {% if item.active %}checked{% endif %}>
+                  <i></i>
+                  <span>{% if item.active %}Active{% else %}Inactive{% endif %}</span>
+                </label>
+              </td>
+              <td>{{ item.last_scanned }}</td>
+              <td>
+                <button class="mini device-action" data-action="Generate QR" data-device="{{ item.id }}" type="button">Gen QR</button>
+                <button class="mini device-action" data-action="Edit" data-device="{{ item.id }}" type="button">Edit</button>
+                <button class="mini danger device-action" data-action="Remove" data-device="{{ item.id }}" type="button">Remove</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+{% endblock %}

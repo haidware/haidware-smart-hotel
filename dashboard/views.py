@@ -1,4 +1,11 @@
 from django.shortcuts import render
+WEB_QR_STORE=[
+ {'id':'STR-001','name':'Hotel Cap','category':'Merchandise','price':3500,'stock':12,'qr_generated':True,'active':True,'last_scanned':'5 minutes ago'},
+ {'id':'STR-002','name':'HAIDWARE Tote Bag','category':'Merchandise','price':4500,'stock':8,'qr_generated':True,'active':True,'last_scanned':'22 minutes ago'},
+ {'id':'STR-003','name':'Bottled Water (500ml)','category':'Consumables','price':500,'stock':50,'qr_generated':True,'active':True,'last_scanned':'1 minute ago'},
+ {'id':'STR-004','name':'Snack Pack','category':'Consumables','price':1800,'stock':20,'qr_generated':False,'active':False,'last_scanned':'Never'},
+ {'id':'STR-005','name':'Toiletry Kit','category':'Personal Care','price':2200,'stock':15,'qr_generated':True,'active':True,'last_scanned':'2 hours ago'},
+ {'id':'STR-006','name':'Premium Chocolate','category':'Consumables','price':1200,'stock':0,'qr_generated':True,'active':False,'last_scanned':'Yesterday'}]
 KITCHEN=[
  {'id':'KIT-001','name':'Jollof Rice','category':'Local Dishes','price':3500,'available':True,'description':'Smoky rice served with grilled chicken.'},
  {'id':'KIT-002','name':'Fried Rice','category':'Local Dishes','price':3000,'available':True,'description':'Seasoned rice with vegetables.'},
@@ -67,4 +74,8 @@ def devices(request):
  c=base('Device Management','IOT DEVICE SYSTEM','Monitor each IoT WiFi device, connection state, operating permission and heartbeat.'); c.update(devices=DEVICES,metrics=[{'value':len(DEVICES),'label':'Total Devices'},{'value':len([d for d in DEVICES if d['wifi']]),'label':'WiFi Connected'},{'value':len([d for d in DEVICES if d['active']]),'label':'Active Devices'},{'value':len([d for d in DEVICES if not d['online']]),'label':'Offline / Faulty'}]); return render(request,'dashboard/devices.html',c)
 def staff(request):
  c=base('Staff Access','STAFF ACCESS','Manage hotel staff roles and future access permissions.'); c['staff_members']=STAFF; return render(request,'dashboard/staff.html',c)
+def web_qr_operation(request):
+ active=[i for i in WEB_QR_STORE if i['active']]; qr=[i for i in WEB_QR_STORE if i['qr_generated']]
+ c=base('Web QR Operation','WEB QR OPERATION','Manage store-listed items visible via QR scan — control stock, generate QR codes and toggle item availability.')
+ c.update(items=WEB_QR_STORE,categories=['All','Merchandise','Consumables','Personal Care'],metrics=[{'value':len(WEB_QR_STORE),'label':'Total Items'},{'value':len(active),'label':'Active Items'},{'value':len(qr),'label':'QR Codes Generated'},{'value':len([i for i in WEB_QR_STORE if i['stock']==0]),'label':'Out of Stock'}]); return render(request,'dashboard/web_qr_operation.html',c)
 def settings_page(request): return render(request,'dashboard/settings.html',base('Settings','SYSTEM SETTINGS','Configure hotel identity, future integrations and IoT operating rules.'))
