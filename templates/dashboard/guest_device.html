@@ -3,157 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %} — HAIDWARE Smart Hotel</title>
+  <title>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %} — HAIDWARE</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, Arial, sans-serif; }
-    :root { --purple: #2d0b47; --soft: #f1e8f8; --line: #eadff0; --green: #16a34a; }
-    body { background: #fbf8ff; color: #2a0b46; min-height: 100vh; }
-
-    .guest-header {
-      background: var(--purple); color: white;
-      padding: 24px 20px; text-align: center;
-    }
-    .guest-header h1 { font-size: 26px; letter-spacing: 0.5px; }
-    .guest-header p { font-size: 13px; letter-spacing: 6px; color: #ead7ff; margin-top: 4px; }
-    .room-badge {
-      display: inline-block; margin-top: 14px;
-      background: rgba(255,255,255,0.15); border-radius: 999px;
-      padding: 8px 20px; font-size: 18px; font-weight: 900;
-    }
-
-    .tabs {
-      display: flex; gap: 0; background: white;
-      border-bottom: 2px solid var(--line); overflow-x: auto;
-    }
-    .tab {
-      flex: 1; min-width: 100px; padding: 16px 10px;
-      border: 0; background: transparent; font-weight: 900;
-      font-size: 15px; color: #71627c; cursor: pointer;
-      border-bottom: 3px solid transparent; margin-bottom: -2px;
-    }
-    .tab.active { color: #6d2992; border-bottom-color: #6d2992; }
-
-    .tab-content { display: none; padding: 24px 16px; }
-    .tab-content.active { display: block; }
-
-    .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (min-width: 480px) { .item-grid { grid-template-columns: repeat(3,1fr); } }
-
-    .item-card {
-      background: white; border: 1px solid var(--line);
-      border-radius: 20px; padding: 18px; text-align: center;
-    }
-    .item-card h4 { font-size: 15px; margin-bottom: 6px; }
-    .item-card .price { font-size: 20px; font-weight: 900; color: #6d2992; margin-bottom: 4px; }
-    .item-card .cat { font-size: 12px; color: #71627c; margin-bottom: 14px; }
-    .item-card button {
-      width: 100%; background: #6d2992; color: white;
-      border: 0; border-radius: 14px; padding: 11px;
-      font-weight: 900; font-size: 14px; cursor: pointer;
-    }
-
-    .service-list { display: grid; gap: 12px; }
-    .service-item {
-      background: white; border: 1px solid var(--line);
-      border-radius: 18px; padding: 18px;
-      display: flex; justify-content: space-between; align-items: center; gap: 14px;
-    }
-    .service-item strong { display: block; font-size: 16px; }
-    .service-item span { font-size: 13px; color: #71627c; margin-top: 3px; display: block; }
-    .service-item .price { font-weight: 900; color: #6d2992; white-space: nowrap; }
-    .request-btn {
-      background: #f1e8f8; color: #2a0b46; border: 0;
-      border-radius: 14px; padding: 10px 16px;
-      font-weight: 900; font-size: 13px; cursor: pointer; white-space: nowrap;
-    }
-
-    .cart-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--purple); color: white;
-      padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
-      transform: translateY(100%); transition: 0.3s;
-    }
-    .cart-bar.visible { transform: none; }
-    .cart-bar span { font-size: 18px; font-weight: 900; }
-    .cart-bar button { background: white; color: var(--purple); border: 0; border-radius: 14px; padding: 12px 24px; font-weight: 900; font-size: 15px; cursor: pointer; }
-
-    .toast { position: fixed; top: 20px; right: 16px; z-index: 300; background: var(--green); color: white; padding: 12px 18px; border-radius: 14px; font-weight: 900; font-size: 14px; display: none; }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',Arial,sans-serif}
+    :root{--purple:#5b21b6;--purple-dark:#3b0764;--purple-light:#f3eeff;--purple-mid:#7c3aed;--line:#e5ddf5;--text:#1e0b3a;--muted:#7c6b8a;--green:#16a34a}
+    body{background:#f9f7fe;color:var(--text);min-height:100vh}
+    .g-header{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .back-btn{background:none;border:none;cursor:pointer;color:var(--purple);font-weight:700;font-size:15px;display:flex;align-items:center;gap:5px;min-width:60px}
+    .g-logo{display:flex;align-items:center;gap:10px}
+    .g-logo-h{width:38px;height:38px;background:var(--purple);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:900;flex-shrink:0}
+    .g-logo-text h2{font-size:15px;font-weight:900;letter-spacing:0.5px;color:var(--purple-dark);line-height:1}
+    .g-logo-text p{font-size:9px;letter-spacing:3px;color:var(--muted);margin-top:2px}
+    .room-pill{background:var(--purple-light);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--purple-dark);white-space:nowrap}
+    .g-page{display:none}.g-page.active{display:block}
+    .tabs{display:flex;background:#fff;border-bottom:2px solid var(--line);overflow-x:auto}
+    .tab{flex:1;min-width:90px;padding:14px 10px;border:0;background:transparent;font-weight:800;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+    .tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+    .tab-content{display:none;padding:20px 16px 120px}.tab-content.active{display:block}
+    .item-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(min-width:480px){.item-grid{grid-template-columns:repeat(3,1fr)}}
+    .item-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center}
+    .item-card .cat{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+    .item-card h4{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.3}
+    .item-card .price{font-size:18px;font-weight:900;color:var(--purple);margin-bottom:12px}
+    .item-card button{width:100%;background:var(--purple);color:#fff;border:0;border-radius:12px;padding:10px;font-weight:800;font-size:13px;cursor:pointer}
+    .service-list{display:grid;gap:10px}
+    .service-item{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+    .service-item strong{display:block;font-size:15px;font-weight:700}
+    .service-item .note{font-size:12px;color:var(--muted);margin-top:3px}
+    .s-price{font-weight:900;color:var(--purple);font-size:16px}
+    .req-btn{background:var(--purple-light);color:var(--purple-dark);border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;margin-top:6px}
+    .cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--purple);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:0.3s;z-index:100}
+    .cart-bar.visible{transform:none}
+    .cart-bar .ci span{font-size:12px;opacity:0.8}
+    .cart-bar .ci strong{display:block;font-size:19px;font-weight:900}
+    .cart-btn{background:#fff;color:var(--purple);border:0;border-radius:14px;padding:12px 22px;font-weight:900;font-size:14px;cursor:pointer}
+    .pay-body{padding:24px 20px 50px;max-width:500px;margin:0 auto}
+    .pay-title-row{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+    .pay-icon{width:52px;height:52px;background:var(--purple-light);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+    .pay-title-row h2{font-size:26px;font-weight:900}
+    .pay-title-row p{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4}
+    .total-card{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:20px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+    .total-card .t-label{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:6px}
+    .total-card .t-amount{font-size:42px;font-weight:900;color:var(--text);line-height:1}
+    .total-card .wallet{font-size:52px;opacity:0.45}
+    .psec-title{font-size:16px;font-weight:800;margin-bottom:12px}
+    .bank-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s}
+    .bank-card.selected{border-color:var(--purple)}
+    .radio-dot{width:22px;height:22px;border-radius:50%;border:2px solid #c9b8e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:0.2s}
+    .bank-card.selected .radio-dot{border-color:var(--purple);background:var(--purple)}
+    .bank-card.selected .radio-dot::after{content:"";width:8px;height:8px;background:#fff;border-radius:50%;display:block}
+    .bank-logo{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0}
+    .bank-info{flex:1}
+    .bank-info strong{display:block;font-size:15px;font-weight:800}
+    .bank-info .bname{font-size:12px;color:var(--muted);margin:2px 0}
+    .bank-info .bnum{font-size:19px;font-weight:900;margin-top:4px}
+    .copy-btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--purple-dark);display:flex;align-items:center;gap:5px;flex-shrink:0}
+    .ref-card{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:16px;padding:20px;margin-bottom:28px;display:grid;grid-template-columns:1fr auto;gap:16px}
+    .ref-left{display:flex;gap:14px;align-items:flex-start}
+    .ref-icon{width:44px;height:44px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .ref-label{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:4px}
+    .ref-code{font-size:22px;font-weight:900;margin-bottom:4px}
+    .ref-note{font-size:13px;color:var(--muted)}
+    .ref-aside{border-left:1.5px solid #d4bcf0;padding-left:16px;font-size:13px;color:var(--muted);line-height:1.6;max-width:120px}
+    .ref-aside strong{color:var(--purple);font-weight:800}
+    .confirm-btn{width:100%;background:var(--purple);color:#fff;border:0;border-radius:18px;padding:20px;font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+    .info-note{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--muted);line-height:1.6}
+    .info-note .shield{font-size:24px}
+    .done-screen{text-align:center;padding:60px 30px}
+    .done-screen .big-icon{font-size:72px;margin-bottom:20px}
+    .done-screen h2{font-size:26px;font-weight:900;margin-bottom:10px}
+    .done-screen p{color:var(--muted);font-size:16px;line-height:1.6}
+    .done-screen button{margin-top:32px;background:var(--purple);color:#fff;border:0;border-radius:16px;padding:16px 32px;font-size:16px;font-weight:900;cursor:pointer}
+    .g-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;background:#16a34a;color:#fff;padding:12px 20px;border-radius:14px;font-weight:800;font-size:14px;display:none;white-space:nowrap}
   </style>
 </head>
 <body>
 
-<div class="guest-header">
-  <h1>HAIDWARE</h1>
-  <p>SMART HOTEL SERVICE</p>
-  <div class="room-badge">📍 {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
-</div>
+<!-- BROWSE PAGE -->
+<div id="browsePage" class="g-page active">
+  <header class="g-header">
+    <div style="min-width:60px"></div>
+    <div class="g-logo">
+      <div class="g-logo-h">H</div>
+      <div class="g-logo-text">
+        <h2>HAIDWARE</h2>
+        <p>SMART HOTEL EXPERIENCE</p>
+      </div>
+    </div>
+    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
+  </header>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('menu',this)">🍽️ Kitchen</button>
-  <button class="tab" onclick="showTab('bar',this)">🍹 Bar</button>
-  <button class="tab" onclick="showTab('services',this)">🛎️ Services</button>
-</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('menu',this)">&#x1F37D;&#xFE0F; Kitchen</button>
+    <button class="tab" onclick="showTab('bar',this)">&#x1F379; Bar</button>
+    <button class="tab" onclick="showTab('services',this)">&#x1F6CE;&#xFE0F; Services</button>
+  </div>
 
-<div id="menu" class="tab-content active">
-  <div class="item-grid">
-    {% for item in menu_items %}
-      {% if item.id|slice:":3" == "KIT" %}
+  <div id="menu" class="tab-content active">
+    <div class="item-grid">
+      {% for item in menu_items %}{% if item.id|slice:":3" == "KIT" %}
         <div class="item-card">
           <div class="cat">{{ item.category }}</div>
           <h4>{{ item.name }}</h4>
-          <div class="price">₦{{ item.price|floatformat:0 }}</div>
-          <button onclick="addToCart('{{ item.name }}', {{ item.price }})">Add to Order</button>
+          <div class="price">&#x20A6;{{ item.price|floatformat:0 }}</div>
+          <button onclick="addToCart('{{ item.name|escapejs }}',{{ item.price }})">Add to Order</button>
         </div>
-      {% endif %}
-    {% endfor %}
+      {% endif %}{% endfor %}
+    </div>
   </div>
-</div>
 
-<div id="bar" class="tab-content">
-  <div class="item-grid">
-    {% for item in menu_items %}
-      {% if item.id|slice:":3" == "BAR" %}
+  <div id="bar" class="tab-content">
+    <div class="item-grid">
+      {% for item in menu_items %}{% if item.id|slice:":3" == "BAR" %}
         <div class="item-card">
           <div class="cat">{{ item.category }}</div>
           <h4>{{ item.name }}</h4>
-          <div class="price">₦{{ item.price|floatformat:0 }}</div>
-          <button onclick="addToCart('{{ item.name }}', {{ item.price }})">Add to Order</button>
+          <div class="price">&#x20A6;{{ item.price|floatformat:0 }}</div>
+          <button onclick="addToCart('{{ item.name|escapejs }}',{{ item.price }})">Add to Order</button>
         </div>
-      {% endif %}
-    {% endfor %}
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+
+  <div id="services" class="tab-content">
+    <div class="service-list">
+      {% for svc in services %}
+        <div class="service-item">
+          <div>
+            <strong>{{ svc.name }}</strong>
+            <div class="note">{{ svc.note }}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="s-price">{% if svc.price > 0 %}&#x20A6;{{ svc.price|floatformat:0 }}{% else %}Free{% endif %}</div>
+            <button class="req-btn" onclick="addToCart('{{ svc.name|escapejs }}',{{ svc.price }})">Request</button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="cart-bar" id="cartBar">
+    <div class="ci">
+      <span id="cartCount">0 items</span>
+      <strong id="cartTotal">&#x20A6;0</strong>
+    </div>
+    <button class="cart-btn" onclick="goToPayment()">Proceed to Pay &rarr;</button>
   </div>
 </div>
 
-<div id="services" class="tab-content">
-  <div class="service-list">
-    {% for svc in services %}
-      <div class="service-item">
-        <div>
-          <strong>{{ svc.name }}</strong>
-          <span>{{ svc.note }}</span>
+<!-- PAYMENT PAGE -->
+<div id="paymentPage" class="g-page">
+  <header class="g-header">
+    <button class="back-btn" onclick="showPage('browsePage')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <div class="g-logo">
+      <div class="g-logo-h">H</div>
+      <div class="g-logo-text"><h2>HAIDWARE</h2><p>SMART HOTEL EXPERIENCE</p></div>
+    </div>
+    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
+  </header>
+
+  <div class="pay-body">
+    <div class="pay-title-row">
+      <div class="pay-icon">&#x1F4B3;</div>
+      <div>
+        <h2>Payment</h2>
+        <p>Please transfer the exact amount to one of the hotel accounts below.</p>
+      </div>
+    </div>
+
+    <div class="total-card">
+      <div>
+        <div class="t-label">Total to Pay</div>
+        <div class="t-amount" id="payTotal">&#x20A6;0</div>
+      </div>
+      <div class="wallet">&#x1F45B;</div>
+    </div>
+
+    <div class="psec-title">1. Select Hotel Bank Account</div>
+    {% for acct in bank_accounts %}
+      <div class="bank-card {% if forloop.first %}selected{% endif %}" id="bank{{ forloop.counter }}" onclick="selectBank(this)">
+        <div class="radio-dot"></div>
+        <div class="bank-logo" style="background:{{ acct.bg }};color:{{ acct.fg }}">{{ acct.icon }}</div>
+        <div class="bank-info">
+          <strong>{{ acct.bank }}</strong>
+          <div class="bname">{{ acct.name }}</div>
+          <div class="bnum">{{ acct.number }}</div>
         </div>
-        <div style="text-align:right">
-          {% if svc.price > 0 %}
-            <div class="price">₦{{ svc.price|floatformat:0 }}</div>
-          {% else %}
-            <div class="price">Free</div>
-          {% endif %}
-          <button class="request-btn" onclick="addToCart('{{ svc.name }}', {{ svc.price }})">Request</button>
-        </div>
+        <button class="copy-btn" onclick="copyNum(event,'{{ acct.number }}')">&#x1F4CB; Copy Account Number</button>
       </div>
     {% endfor %}
+
+    <div class="psec-title" style="margin-top:24px">2. Use this reference for your transfer</div>
+    <div class="ref-card">
+      <div class="ref-left">
+        <div class="ref-icon">&#x1F3F7;</div>
+        <div>
+          <div class="ref-label">Transfer Reference</div>
+          <div class="ref-code" id="refCode">&mdash;</div>
+          <div class="ref-note">This helps us confirm your payment quickly.</div>
+        </div>
+      </div>
+      <div class="ref-aside">&#x2139; Please transfer the <strong>exact amount</strong> shown above.</div>
+    </div>
+
+    <div class="psec-title">3. After transfer</div>
+    <button class="confirm-btn" onclick="showPage('confirmPage')">&#x2713;&nbsp;&nbsp;I Have Made the Transfer</button>
+    <div class="info-note">
+      <span class="shield">&#x1F6E1;</span>
+      <span>Your order will be submitted after hotel staff confirms your payment. You will receive a notification once your payment is confirmed.</span>
+    </div>
   </div>
 </div>
 
-<div class="cart-bar" id="cartBar">
-  <span id="cartLabel">0 items — ₦0</span>
-  <button onclick="checkout()">Checkout via Paystack</button>
+<!-- CONFIRMATION PAGE -->
+<div id="confirmPage" class="g-page">
+  <header class="g-header">
+    <div style="min-width:60px"></div>
+    <div class="g-logo">
+      <div class="g-logo-h">H</div>
+      <div class="g-logo-text"><h2>HAIDWARE</h2><p>SMART HOTEL EXPERIENCE</p></div>
+    </div>
+    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
+  </header>
+  <div class="done-screen">
+    <div class="big-icon">&#x2705;</div>
+    <h2>Transfer Submitted!</h2>
+    <p>Your order is now awaiting confirmation.<br>Hotel staff will verify your bank transfer shortly.</p>
+    <button onclick="goHome()">Back to Menu</button>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="g-toast" id="gToast"></div>
 
 <script>
-  let cart = [], total = 0;
+  let cart = [], cartTotal = 0;
+  const roomLabel = "{% if room %}{{ room.location|escapejs }}{% else %}{{ room_id }}{% endif %}";
+  const ref = roomLabel.replace(/\s+/g,'') + '-' + Math.floor(1000 + Math.random() * 9000);
 
   function showTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -163,22 +252,49 @@
   }
 
   function addToCart(name, price) {
-    cart.push({name, price});
-    total += price;
-    document.getElementById('cartLabel').textContent = cart.length + ' item' + (cart.length > 1 ? 's' : '') + ' — ₦' + total.toLocaleString();
+    cart.push({name, price}); cartTotal += price;
+    document.getElementById('cartCount').textContent = cart.length + ' item' + (cart.length > 1 ? 's' : '');
+    document.getElementById('cartTotal').textContent = '\u20A6' + cartTotal.toLocaleString();
     document.getElementById('cartBar').classList.add('visible');
-    showToast(name + ' added to order');
+    toast(name + ' added \u2713');
   }
 
-  function checkout() {
-    if (cart.length === 0) return;
-    showToast('Redirecting to Paystack payment…');
+  function goToPayment() {
+    if (!cart.length) return;
+    document.getElementById('payTotal').textContent = '\u20A6' + cartTotal.toLocaleString();
+    document.getElementById('refCode').textContent = ref;
+    showPage('paymentPage');
   }
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
+  function showPage(id) {
+    document.querySelectorAll('.g-page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function selectBank(el) {
+    document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function copyNum(e, num) {
+    e.stopPropagation();
+    navigator.clipboard.writeText(num).catch(function(){});
+    toast('Account number copied!');
+  }
+
+  function goHome() {
+    cart = []; cartTotal = 0;
+    document.getElementById('cartCount').textContent = '0 items';
+    document.getElementById('cartTotal').textContent = '\u20A60';
+    document.getElementById('cartBar').classList.remove('visible');
+    showPage('browsePage');
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('gToast');
     t.textContent = msg; t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 2500);
+    setTimeout(function(){ t.style.display = 'none'; }, 2500);
   }
 </script>
 </body>
