@@ -15,12 +15,17 @@
       </form>
     </article>
     <article class="content-card">
-      <h3>Firebase + Paystack</h3>
-      <form>
-        <label>Firebase API Key<input placeholder="Firebase API Key"></label>
-        <label>Realtime Database URL<input placeholder="https://project.firebaseio.com"></label>
-        <label>Paystack Public Key<input placeholder="pk_test_xxxxx"></label>
-      </form>
+      <h3>Bank Accounts</h3>
+      <p class="muted" style="margin-bottom:18px;font-size:15px">These accounts appear on the guest payment page when a guest scans a room QR code.</p>
+      {% for acct in bank_accounts %}
+        <div style="border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px">
+          <strong style="font-size:16px">{{ acct.bank }}</strong>
+          <form style="margin-top:10px">
+            <label>Account Name<input value="{{ acct.name }}"></label>
+            <label>Account Number<input value="{{ acct.number }}"></label>
+          </form>
+        </div>
+      {% endfor %}
     </article>
   </section>
   <article class="content-card section-gap">
@@ -31,6 +36,11 @@ wifiConnected == true
 lastSeen is recent
 
 Menu item displays only when:
-available == true</pre>
+available == true
+
+Guest QR payment flow:
+Guest scans QR → views menu → adds items → proceeds to pay
+→ transfers to hotel bank account with reference
+→ staff confirms transfer → order is fulfilled</pre>
   </article>
 {% endblock %}

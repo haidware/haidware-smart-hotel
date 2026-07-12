@@ -33,11 +33,14 @@ ORDERS=[
  {'id':'ORD-1023','location':'Table 7','department':'Bar','items':'Mojito ×2','total':7000,'payment':'Paid','status':'Preparing','handler':'Bar User','updated':'5 minutes ago'},
  {'id':'ORD-1022','location':'Room 118','department':'Housekeeping','items':'Laundry','total':3000,'payment':'Room Billing','status':'Completed','handler':'Housekeeping','updated':'20 minutes ago'},
  {'id':'ORD-1021','location':'Lounge 2','department':'Kitchen','items':'Chicken Alfredo ×1','total':6200,'payment':'Pending','status':'Pending','handler':'Unassigned','updated':'25 minutes ago'}]
+BANK_ACCOUNTS=[
+ {'bank':'OPay','name':'HAIDWARE HOTEL','number':'8123456789','icon':'O','bg':'#e8f5e9','fg':'#16a34a'},
+ {'bank':'Access Bank','name':'HAIDWARE HOTEL','number':'0123456789','icon':'◈','bg':'#fff3e0','fg':'#e65100'}]
 PAYMENTS=[
- {'reference':'PAY-98102','order':'ORD-1024','customer':'Room 205','amount':9500,'gateway':'Paystack','status':'Paid','date':'Today, 10:31'},
- {'reference':'PAY-98101','order':'ORD-1023','customer':'Table 7','amount':7000,'gateway':'Paystack','status':'Paid','date':'Today, 10:27'},
- {'reference':'PAY-98100','order':'ORD-1021','customer':'Lounge 2','amount':6200,'gateway':'Paystack','status':'Pending','date':'Today, 10:14'},
- {'reference':'PAY-98099','order':'ORD-1019','customer':'Room 301','amount':4000,'gateway':'Paystack','status':'Failed','date':'Today, 09:58'}]
+ {'reference':'ROOM205-4821','order':'ORD-1024','customer':'Room 205','amount':9500,'method':'OPay','account':'8123456789','status':'Pending Confirmation','date':'Today, 10:31'},
+ {'reference':'TABLE7-3291','order':'ORD-1023','customer':'Table 7','amount':7000,'method':'Access Bank','account':'0123456789','status':'Confirmed','date':'Today, 10:27'},
+ {'reference':'ROOM118-2847','order':'ORD-1022','customer':'Room 118','amount':3000,'method':'OPay','account':'8123456789','status':'Confirmed','date':'Today, 10:14'},
+ {'reference':'LOUNGE2-9103','order':'ORD-1021','customer':'Lounge 2','amount':6200,'method':'Access Bank','account':'0123456789','status':'Pending Confirmation','date':'Today, 09:58'}]
 DEVICES=[
  {'id':'DEV-001','location':'Room 205','type':'Room','wifi_ssid':'Hotel_Guest_5G','ip':'192.168.1.23','wifi':True,'online':True,'active':True,'last_seen':'10 seconds ago'},
  {'id':'DEV-002','location':'Table 7','type':'Restaurant Table','wifi_ssid':'Hotel_Restaurant','ip':'192.168.1.24','wifi':True,'online':True,'active':True,'last_seen':'8 seconds ago'},
@@ -56,7 +59,7 @@ def overview(request):
  c=base('Smart Hotel Control Center','ADMIN OVERVIEW','Manage available menu items, payment-confirmed orders, tracking updates, handler workflow, IoT WiFi devices, and customer service requests.')
  c.update(metrics=[{'value':len(all_items),'label':'Total Items'},{'value':len(visible),'label':'Visible on Device'},{'value':len([o for o in ORDERS if o['status']=='Pending']),'label':'Pending Orders'},{'value':len(DEVICES),'label':'IoT Devices'}],preview_items=visible[:7],recent_orders=ORDERS[:3]); return render(request,'dashboard/overview.html',c)
 def device_page(request):
- c=base('Device Description Page','SMART HOTEL DEVICE','Public-facing product description and authorized admin entry foundation.'); c['features']=['Kitchen Menu','Bar Menu','Hotel Services','Paystack Payment','WiFi IoT Device','Admin Control']; return render(request,'dashboard/device_page.html',c)
+ c=base('Device Description Page','SMART HOTEL DEVICE','Public-facing product description and authorized admin entry foundation.'); c['features']=['Kitchen Menu','Bar Menu','Hotel Services','Bank Transfer Payment','WiFi IoT Device','Admin Control']; return render(request,'dashboard/device_page.html',c)
 def kitchen(request):
  c=base('Kitchen Menu','SMART HOTEL DEVICE','Available items appear on the guest device; unavailable items remain hidden.'); c.update(items=KITCHEN,categories=['All','Local Dishes','Intercontinental','Soups','Grills','Desserts'],item_type='Food'); return render(request,'dashboard/menu.html',c)
 def bar(request):
@@ -66,8 +69,9 @@ def services(request):
 def orders(request):
  c=base('Orders','ORDERS','Review guest orders by room or table, department, payment state and fulfilment status.'); c.update(orders=ORDERS,metrics=[{'value':len(ORDERS),'label':'Total Orders'},{'value':len([o for o in ORDERS if o['status']=='Pending']),'label':'Pending'},{'value':len([o for o in ORDERS if o['status']=='Preparing']),'label':'Preparing'},{'value':len([o for o in ORDERS if o['status']=='Completed']),'label':'Completed'}]); return render(request,'dashboard/orders.html',c)
 def payments(request):
- paid=[p for p in PAYMENTS if p['status']=='Paid']; pending=[p for p in PAYMENTS if p['status']=='Pending']; failed=[p for p in PAYMENTS if p['status']=='Failed']
- c=base('Payment Management','ORDERS','Track Paystack records, pending transactions and confirmed revenue.'); c.update(payments=PAYMENTS,metrics=[{'value':f"₦{sum(p['amount'] for p in paid):,}",'label':'Confirmed'},{'value':f"₦{sum(p['amount'] for p in pending):,}",'label':'Pending'},{'value':len(failed),'label':'Failed'},{'value':f"₦{sum(p['amount'] for p in paid):,}",'label':'Today'}]); return render(request,'dashboard/payments.html',c)
+ confirmed=[p for p in PAYMENTS if p['status']=='Confirmed']; pending=[p for p in PAYMENTS if p['status']=='Pending Confirmation']
+ c=base('Payment Management','ORDERS','Track bank transfer payments via OPay and Access Bank. Confirm transfers once verified in your bank app.')
+ c.update(payments=PAYMENTS,bank_accounts=BANK_ACCOUNTS,metrics=[{'value':f"₦{sum(p['amount'] for p in confirmed):,}",'label':'Confirmed Revenue'},{'value':f"₦{sum(p['amount'] for p in pending):,}",'label':'Awaiting Confirmation'},{'value':len(pending),'label':'Pending Orders'},{'value':f"₦{sum(p['amount'] for p in PAYMENTS):,}",'label':'Total Today'}]); return render(request,'dashboard/payments.html',c)
 def workflow(request):
  c=base('Handler Workflow','HANDLER WORKFLOW','Standard operating flow from payment confirmation to service delivery.'); c['steps']=[('Payment Confirmed','Order details enter the admin portal.'),('Department Assignment','Kitchen, bar, housekeeping or reception receives the request.'),('Preparation','Staff processes the request and updates its status.'),('Delivery / Completion','The handler marks the order or request as completed.')]; return render(request,'dashboard/workflow.html',c)
 def tracking(request):
@@ -93,6 +97,6 @@ def guest_device(request, room_id):
  room=next((d for d in DEVICES if d['id']==room_id),None)
  all_menu=KITCHEN+BAR; available_menu=[x for x in all_menu if x['available']]
  available_services=[s for s in SERVICES if s['available']]
- c={'page_title':f"{room['location'] if room else room_id} — Guest Device",'room':room,'room_id':room_id,'menu_items':available_menu,'services':available_services}
+ c={'page_title':f"{room['location'] if room else room_id} — Guest Device",'room':room,'room_id':room_id,'menu_items':available_menu,'services':available_services,'bank_accounts':BANK_ACCOUNTS}
  return render(request,'dashboard/guest_device.html',c)
-def settings_page(request): return render(request,'dashboard/settings.html',base('Settings','SYSTEM SETTINGS','Configure hotel identity, future integrations and IoT operating rules.'))
+def settings_page(request): return render(request,'dashboard/settings.html',{**base('Settings','SYSTEM SETTINGS','Configure hotel identity, bank accounts for guest payments, and IoT operating rules.'),'bank_accounts':BANK_ACCOUNTS})

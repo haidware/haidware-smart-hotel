@@ -4,10 +4,29 @@
 {% block content %}
   {% include 'includes/metrics.html' %}
   <article class="content-card">
-    <div class="card-head"><h3>Payment Records</h3></div>
+    <div class="card-head">
+      <h3>Payment Records</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        {% for acct in bank_accounts %}
+          <span class="pill paid" style="font-size:13px">{{ acct.bank }}: {{ acct.number }}</span>
+        {% endfor %}
+      </div>
+    </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Reference</th><th>Order</th><th>Customer</th><th>Amount</th><th>Gateway</th><th>Status</th><th>Date</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Order</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Account</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody>
           {% for p in payments %}
             <tr class="search-target">
@@ -15,9 +34,21 @@
               <td>{{ p.order }}</td>
               <td>{{ p.customer }}</td>
               <td>{{ p.amount|currency }}</td>
-              <td>{{ p.gateway }}</td>
-              <td><span class="pill {{ p.status|lower }}">{{ p.status }}</span></td>
+              <td>{{ p.method }}</td>
+              <td><code>{{ p.account }}</code></td>
+              <td>
+                <span class="pill {% if p.status == 'Confirmed' %}paid{% else %}pending{% endif %}">
+                  {{ p.status }}
+                </span>
+              </td>
               <td>{{ p.date }}</td>
+              <td>
+                {% if p.status == 'Pending Confirmation' %}
+                  <button class="mini device-action" data-action="Confirm" data-device="{{ p.reference }}" type="button">✓ Confirm</button>
+                {% else %}
+                  <span style="color:#71627c;font-size:13px">—</span>
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>
