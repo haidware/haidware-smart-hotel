@@ -1,0 +1,33 @@
+{% load dashboard_tags %}
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="{% url 'dashboard:overview' %}">
+    <h1>HAIDWARE</h1>
+    <p>ADMIN PORTAL</p>
+  </a>
+  <nav>
+    <div class="nav-section">
+      <span>DASHBOARD</span>
+      <a class="nav-link {% nav_active 'overview' %}" href="{% url 'dashboard:overview' %}">&#127968; Overview</a>
+    </div>
+    <div class="nav-section">
+      <span>SMART HOTEL DEVICE</span>
+      <a class="nav-link {% nav_active 'device_page' %}" href="{% url 'dashboard:device_page' %}">&#128241; Device Page</a>
+      <a class="nav-link {% nav_active 'kitchen' %}" href="{% url 'dashboard:kitchen' %}">&#127869;&#65039; Kitchen Menu</a>
+      <a class="nav-link {% nav_active 'bar' %}" href="{% url 'dashboard:bar' %}">&#127865; Bar Menu</a>
+      <a class="nav-link {% nav_active 'services' %}" href="{% url 'dashboard:services' %}">&#128718;&#65039; Services</a>
+    </div>
+    <div class="nav-section">
+      <span>ORDERS</span>
+      <a class="nav-link {% nav_active 'orders' %}" href="{% url 'dashboard:orders' %}">&#129534; Orders</a>
+      <a class="nav-link {% nav_active 'payments' %}" href="{% url 'dashboard:payments' %}">&#128179; Payments</a>
+      <a class="nav-link {% nav_active 'workflow' %}" href="{% url 'dashboard:workflow' %}">&#128736; Handler Workflow</a>
+      <a class="nav-link {% nav_active 'tracking' %}" href="{% url 'dashboard:tracking' %}">&#128205; Tracking Updates</a>
+    </div>
+    <div class="nav-section">
+      <span>IOT SYSTEM</span>
+      <a class="nav-link {% nav_active 'devices' %}" href="{% url 'dashboard:devices' %}">&#128225; Device Management</a>
+      <a class="nav-link {% nav_active 'staff' %}" href="{% url 'dashboard:staff' %}">&#128101; Staff Access</a>
+      <a class="nav-link {% nav_active 'settings' %}" href="{% url 'dashboard:settings' %}">&#9881;&#65039; Settings</a>
+    </div>
+  </nav>
+</aside>

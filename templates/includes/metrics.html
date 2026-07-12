@@ -1,0 +1,8 @@
+<section class="stats-grid">
+  {% for metric in metrics %}
+    <article class="stat-card">
+      <h3>{{ metric.value }}</h3>
+      <p>{{ metric.label }}</p>
+    </article>
+  {% endfor %}
+</section>
