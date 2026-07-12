@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <article class="content-card">
+    {% for title, text in steps %}
+      <div class="workflow-item">
+        <span>{{ forloop.counter }}</span>
+        <div><strong>{{ title }}</strong><p>{{ text }}</p></div>
+      </div>
+    {% endfor %}
+  </article>
+  <article class="content-card section-gap">
+    <h3>Handler Requirements</h3>
+    <div class="rule-grid">
+      <div><strong>Kitchen</strong><p>Confirm availability, preparation and dispatch.</p></div>
+      <div><strong>Bar</strong><p>Confirm drink availability and completion.</p></div>
+      <div><strong>Reception</strong><p>Coordinate room billing and guest support.</p></div>
+      <div><strong>Housekeeping</strong><p>Accept, process and close service requests.</p></div>
+    </div>
+  </article>
+{% endblock %}

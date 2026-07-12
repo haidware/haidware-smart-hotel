@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load dashboard_tags %}
+
+{% block content %}
+  <article class="content-card">
+    <form class="form-grid five">
+      <input placeholder="{% if item_type == 'Food' %}Food name e.g. Jollof Rice{% else %}Drink name e.g. Chapman{% endif %}">
+      <input type="number" placeholder="Price e.g. 3500">
+      <select>
+        {% for c in categories %}{% if c != 'All' %}<option>{{ c }}</option>{% endif %}{% endfor %}
+      </select>
+      <input placeholder="Image URL">
+      <button class="primary-btn" type="submit">Post {{ item_type }}</button>
+    </form>
+    <div class="filters">
+      {% for c in categories %}
+        <button class="filter-btn {% if forloop.first %}active{% endif %}" data-category="{{ c }}">{{ c }}</button>
+      {% endfor %}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{% if item_type == 'Food' %}Food Item{% else %}Drink Item{% endif %}</th>
+            <th>Category</th><th>Price</th><th>Image</th><th>Device Display</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for x in items %}
+            <tr class="search-target filter-row" data-category="{{ x.category }}">
+              <td><strong>{{ x.name }}</strong><br><small>{{ x.id }}</small></td>
+              <td>{{ x.category }}</td>
+              <td>{{ x.price|currency }}</td>
+              <td>{{ x.description }}</td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" {% if x.available %}checked{% endif %}>
+                  <i></i>
+                  <span>{% if x.available %}Visible on Device{% else %}Hidden from Device{% endif %}</span>
+                </label>
+              </td>
+              <td>
+                <button class="mini" type="button">Edit</button>
+                <button class="mini danger" type="button">Delete</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+{% endblock %}

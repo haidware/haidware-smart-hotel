@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load dashboard_tags %}
+
+{% block content %}
+  {% include 'includes/metrics.html' %}
+  <article class="content-card">
+    <div class="card-head"><h3>Payment Records</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Reference</th><th>Order</th><th>Customer</th><th>Amount</th><th>Gateway</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for p in payments %}
+            <tr class="search-target">
+              <td><strong>{{ p.reference }}</strong></td>
+              <td>{{ p.order }}</td>
+              <td>{{ p.customer }}</td>
+              <td>{{ p.amount|currency }}</td>
+              <td>{{ p.gateway }}</td>
+              <td><span class="pill {{ p.status|lower }}">{{ p.status }}</span></td>
+              <td>{{ p.date }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+{% endblock %}

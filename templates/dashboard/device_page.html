@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block action %}
+  <button class="primary-btn">Access Admin Page</button>
+{% endblock %}
+
+{% block content %}
+  <article class="content-card">
+    <h3>Smart Device Description Copy</h3>
+    <p class="large-copy">
+      HAIDWARE Smart Hotel Service Device is a modern touch-based service device for hotels, restaurants, bars and lounges.
+      Guests can browse available kitchen menus, bar menus and services, place orders, request support and make instant payments.
+    </p>
+    <div class="tag-row">
+      {% for x in features %}<span>{{ x }}</span>{% endfor %}
+    </div>
+    <button class="primary-btn">Access Admin Page</button>
+  </article>
+{% endblock %}

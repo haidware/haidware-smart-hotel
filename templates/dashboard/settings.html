@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block action %}
+  <button class="primary-btn" id="saveSettings">Save Settings</button>
+{% endblock %}
+
+{% block content %}
+  <section class="two-col">
+    <article class="content-card">
+      <h3>Hotel Settings</h3>
+      <form>
+        <label>Hotel Name<input value="HAIDWARE Demo Hotel"></label>
+        <label>Support Phone<input value="+234 000 000 0000"></label>
+        <label>Currency<input value="NGN"></label>
+      </form>
+    </article>
+    <article class="content-card">
+      <h3>Firebase + Paystack</h3>
+      <form>
+        <label>Firebase API Key<input placeholder="Firebase API Key"></label>
+        <label>Realtime Database URL<input placeholder="https://project.firebaseio.com"></label>
+        <label>Paystack Public Key<input placeholder="pk_test_xxxxx"></label>
+      </form>
+    </article>
+  </section>
+  <article class="content-card section-gap">
+    <h3>Device Operating Rules</h3>
+    <pre>Device runs only when:
+active == true
+wifiConnected == true
+lastSeen is recent
+
+Menu item displays only when:
+available == true</pre>
+  </article>
+{% endblock %}

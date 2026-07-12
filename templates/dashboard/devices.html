@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% include 'includes/metrics.html' %}
+  <article class="content-card">
+    <form class="form-grid five">
+      <input placeholder="Device ID e.g. DEV-004">
+      <input placeholder="Room/Table e.g. Room 205">
+      <select>
+        <option>Room</option><option>Restaurant Table</option><option>Bar Table</option><option>Lounge</option>
+      </select>
+      <input placeholder="WiFi SSID">
+      <button class="primary-btn" type="submit">Add Device</button>
+    </form>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Device ID</th><th>Location</th><th>Type</th><th>WiFi SSID</th><th>IP</th><th>WiFi</th><th>IoT Status</th><th>Active</th><th>Last Seen</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for d in devices %}
+            <tr class="search-target">
+              <td><strong>{{ d.id }}</strong></td>
+              <td>{{ d.location }}</td>
+              <td>{{ d.type }}</td>
+              <td>{{ d.wifi_ssid }}</td>
+              <td><code>{{ d.ip }}</code></td>
+              <td><span class="pill {% if d.wifi %}paid{% else %}failed{% endif %}">{% if d.wifi %}Connected{% else %}Disconnected{% endif %}</span></td>
+              <td><span class="pill {% if d.online %}paid{% else %}failed{% endif %}">{% if d.online %}Online{% else %}Offline{% endif %}</span></td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" {% if d.active %}checked{% endif %}>
+                  <i></i>
+                  <span>{% if d.active %}Active{% else %}Inactive{% endif %}</span>
+                </label>
+              </td>
+              <td>{{ d.last_seen }}</td>
+              <td>
+                <button class="mini device-action" data-action="Sync" data-device="{{ d.id }}" type="button">Sync</button>
+                <button class="mini device-action" data-action="Restart" data-device="{{ d.id }}" type="button">Restart</button>
+                <button class="mini danger device-action" data-action="Disable" data-device="{{ d.id }}" type="button">Disable</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+{% endblock %}
