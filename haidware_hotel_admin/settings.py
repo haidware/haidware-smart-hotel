@@ -6,15 +6,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-before-production')
 DEBUG = os.environ.get('DEBUG', 'False') != 'False'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', '.railway.app']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', '.railway.app', '.loca.lt']
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.staticfiles',
     'dashboard',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -53,3 +55,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://[a-z0-9-]+\.loca\.lt$',
+]
+
+# Supabase sync (admin portal -> Supabase)
+SUPABASE_SYNC_ENABLED = os.environ.get('SUPABASE_SYNC_ENABLED', '0') == '1'
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+SUPABASE_HOTEL_TABLE = os.environ.get('SUPABASE_HOTEL_TABLE', 'hotel_accounts').strip()
+SUPABASE_MENU_TABLE = os.environ.get('SUPABASE_MENU_TABLE', 'menu_items').strip()
+SUPABASE_HOTEL_NAME = os.environ.get('SUPABASE_HOTEL_NAME', 'Sunview').strip()

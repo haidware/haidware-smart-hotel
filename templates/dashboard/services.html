@@ -3,23 +3,47 @@
 
 {% block content %}
   <article class="content-card">
-    <form class="form-grid five">
-      <input placeholder="Service e.g. Laundry">
-      <input type="number" placeholder="Price e.g. 5000">
-      <select>
-        {% for c in categories %}{% if c != 'All' %}<option>{{ c }}</option>{% endif %}{% endfor %}
+    <form class="form-grid five" method="post">
+      {% csrf_token %}
+      <input name="item_id" placeholder="Service ID e.g. SRV-007" required>
+      <input name="name" placeholder="Service e.g. Laundry" required>
+      <select name="category" required>
+        {% for c in categories %}
+          {% if c != 'All' %}
+            <option>{{ c }}</option>
+          {% endif %}
+        {% endfor %}
       </select>
-      <input placeholder="Service note">
+      <input name="price" type="number" min="0" placeholder="Price e.g. 5000" required>
+      <input type="hidden" name="action" value="add">
+      <input name="note" placeholder="Service note">
       <button class="primary-btn" type="submit">Post Service</button>
     </form>
+    {% if flash_success %}
+      <div style="border:1px solid #86efac;background:#ecfdf3;color:#166534;padding:12px 14px;border-radius:12px;margin-bottom:14px;font-weight:700;">{{ flash_success }}</div>
+    {% endif %}
+    {% if flash_error %}
+      <div class="requirements-box" style="margin-bottom:14px;padding:12px 14px;">{{ flash_error }}</div>
+    {% endif %}
+
     <div class="filters">
       {% for c in categories %}
         <button class="filter-btn {% if forloop.first %}active{% endif %}" data-category="{{ c }}">{{ c }}</button>
       {% endfor %}
     </div>
+
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Service</th><th>Department</th><th>Price</th><th>Note</th><th>Device Display</th><th>Action</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Department</th>
+            <th>Price</th>
+            <th>Note</th>
+            <th>Device Display</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody>
           {% for x in items %}
             <tr class="search-target filter-row" data-category="{{ x.category }}">
@@ -28,15 +52,20 @@
               <td>{{ x.price|currency }}</td>
               <td>{{ x.note }}</td>
               <td>
-                <label class="toggle">
-                  <input type="checkbox" {% if x.available %}checked{% endif %}>
-                  <i></i>
-                  <span>{% if x.available %}Visible on Device{% else %}Hidden from Device{% endif %}</span>
-                </label>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="toggle">
+                  <input type="hidden" name="item_id" value="{{ x.id }}">
+                  <button class="mini" type="submit">{% if x.available %}Hide on Device{% else %}Show on Device{% endif %}</button>
+                </form>
               </td>
               <td>
-                <button class="mini" type="button">Edit</button>
-                <button class="mini danger" type="button">Delete</button>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="item_id" value="{{ x.id }}">
+                  <button class="mini danger" type="submit">Delete</button>
+                </form>
               </td>
             </tr>
           {% endfor %}
