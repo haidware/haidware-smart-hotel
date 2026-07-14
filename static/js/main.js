@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Sidebar toggle (mobile)
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('sidebarToggle');
   if (toggle) toggle.onclick = () => sidebar.classList.toggle('open');
 
+  // Close sidebar when clicking outside on mobile
   document.addEventListener('click', e => {
     if (window.innerWidth <= 900 && sidebar && sidebar.classList.contains('open')
         && !sidebar.contains(e.target) && e.target !== toggle) {
@@ -10,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Global search
   const search = document.getElementById('globalSearch');
   if (search) {
     search.oninput = e => {
@@ -20,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Category filter buttons
   document.querySelectorAll('.filter-btn').forEach(b => {
     b.onclick = () => {
       document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
@@ -31,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
+  // Toggle switches (availability / active)
   document.querySelectorAll('.toggle input').forEach(i => {
     i.onchange = () => {
       const s = i.closest('.toggle').querySelector('span');
@@ -42,20 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
+  // Device action buttons
   document.querySelectorAll('.device-action').forEach(b => {
     b.onclick = () => toast(`${b.dataset.action} command prepared for ${b.dataset.device}. Backend not connected.`);
   });
 
+  // Settings save
   const save = document.getElementById('saveSettings');
   if (save) save.onclick = () => toast('Settings saved in the interface only.');
 
+  // Export orders CSV
   const exp = document.getElementById('exportButton');
   if (exp) exp.onclick = () => exportCsv();
 
-  document.querySelectorAll('form').forEach(f => {
+  // Optional foundation-only forms can opt in to client-only behavior
+  document.querySelectorAll('form[data-foundation-only="true"]').forEach(f => {
     f.onsubmit = e => {
       e.preventDefault();
-      toast('Foundation form — persistence will be added with the database layer.');
+      toast('Foundation form â€” persistence will be added with the database layer.');
     };
   });
 });
