@@ -1,8 +1,13 @@
 from django.urls import path
 from . import views
+from . import auth_views
 app_name='dashboard'
 urlpatterns=[
- path('',views.overview,name='overview'),path('device-page/',views.device_page,name='device_page'),
+ path('',auth_views.admin_entry,name='admin_entry'),
+ path('admin-login/',auth_views.admin_login,name='admin_login'),
+ path('admin-signup/',auth_views.admin_signup,name='admin_signup'),
+ path('admin-logout/',auth_views.admin_logout,name='admin_logout'),
+ path('dashboard/',views.overview,name='overview'),path('device-page/',views.device_page,name='device_page'),
  path('app-web/',views.app_web,name='app_web'),
  path('kitchen/',views.kitchen,name='kitchen'),path('bar/',views.bar,name='bar'),
  path('services/',views.services,name='services'),path('orders/',views.orders,name='orders'),

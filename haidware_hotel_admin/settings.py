@@ -10,6 +10,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', '.railway.app', '.lo
 
 INSTALLED_APPS = [
     'corsheaders',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
     'dashboard',
 ]
@@ -18,7 +19,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'dashboard.middleware.AdminAuthRequiredMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -55,6 +58,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5500',

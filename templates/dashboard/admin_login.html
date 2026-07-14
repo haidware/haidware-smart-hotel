@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/auth_portal.css' %}">
+</head>
+<body>
+  <main class="auth-wrap">
+   <section class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo">H</div>
+      <div class="brand-text">
+        <strong>HAIDWARE</strong>
+        <span>SMART HOTEL EXPERIENCE</span>
+      </div>
+    </div>
+    <span class="badge">ADMIN ACCESS</span>
+    <h1>Admin Login</h1>
+    <p class="lead">Sign in to open your hotel control center.</p>
+    {% if flash_error %}<div class="error">{{ flash_error }}</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <label>Email
+        <input name="email" type="email" required>
+      </label>
+      <label>Password
+        <input name="password" type="password" required>
+      </label>
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+    <div class="links">No account yet? <a href="{% url 'dashboard:admin_signup' %}?next={{ next|urlencode }}">Sign up</a></div>
+   </section>
+  </main>
+</body>
+</html>

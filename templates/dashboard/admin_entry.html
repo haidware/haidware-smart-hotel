@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAIDWARE Admin Access</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/auth_portal.css' %}">
+</head>
+<body>
+  <main class="auth-wrap">
+   <section class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo">H</div>
+      <div class="brand-text">
+        <strong>HAIDWARE</strong>
+        <span>SMART HOTEL EXPERIENCE</span>
+      </div>
+    </div>
+    <span class="badge">HOSPITALITY BUSINESS SOLUTION</span>
+    <h1>Enter as Admin</h1>
+    <p class="lead">This portal is for hotel administration: menu controls, QR operations, guest payment confirmation, and workflow management.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'dashboard:admin_login' %}">Login</a>
+      <a class="btn btn-secondary" href="{% url 'dashboard:admin_signup' %}">Sign Up</a>
+    </div>
+    <p class="mini-note">Link this page from <a href="https://haidware.com" target="_blank" rel="noopener">haidware.com</a> as “Enter as Admin”.</p>
+   </section>
+  </main>
+</body>
+</html>

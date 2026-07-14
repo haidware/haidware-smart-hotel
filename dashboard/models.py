@@ -59,3 +59,14 @@ class PaymentRecord(models.Model):
 
  class Meta:
   ordering=['-created_at']
+
+
+class AdminAccount(models.Model):
+ name=models.CharField(max_length=120)
+ email=models.EmailField(unique=True)
+ password_hash=models.CharField(max_length=256)
+ is_active=models.BooleanField(default=True)
+ created_at=models.DateTimeField(auto_now_add=True)
+
+ class Meta:
+  ordering=['name']
