@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-before-production')
 DEBUG = os.environ.get('DEBUG', 'False') != 'False'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', '.railway.app', '.loca.lt']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', '.railway.app', '.loca.lt', '.haidware.com']
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -70,6 +70,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r'^https://[a-z0-9-]+\.loca\.lt$',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://*.haidware.com',
+    'https://haidware.com',
 ]
 
 # Supabase sync (admin portal -> Supabase)
