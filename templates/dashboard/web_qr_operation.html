@@ -6,34 +6,119 @@
 
   <article class="content-card">
     <div class="card-head">
-      <h3>Room QR Codes</h3>
-      <p class="muted" style="font-size:15px">Each QR links guests directly to the web device page for their room.</p>
+      <div>
+        <h3>Web QR Register</h3>
+        <p class="muted">Create, manage, and download guest-access QR codes for every room or service point.</p>
+      </div>
     </div>
-    <div class="qr-grid">
-      {% for room in rooms %}
-        <div class="qr-card">
-          <div class="qr-code-wrap">
-            <img src="{% url 'dashboard:qr_code' room.id %}" alt="QR for {{ room.location }}" width="160" height="160">
-          </div>
-          <div class="qr-info">
-            <strong>{{ room.location }}</strong>
-            <span>{{ room.type }}</span>
-            <a class="qr-link" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">🔗 Open Guest Page</a>
-            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-              <span class="pill {% if room.online %}paid{% else %}failed{% endif %}">{% if room.online %}Online{% else %}Offline{% endif %}</span>
-              <label class="toggle">
-                <input type="checkbox" {% if room.active %}checked{% endif %}>
-                <i></i>
-                <span>{% if room.active %}Active{% else %}Disabled{% endif %}</span>
-              </label>
-            </div>
-            <div style="margin-top:10px;display:flex;gap:8px;">
-              <a class="mini" href="{% url 'dashboard:qr_code' room.id %}" download="QR-{{ room.id }}.png">⬇ Download QR</a>
-              <a class="mini" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">Preview</a>
-            </div>
-          </div>
+
+    <form method="post" class="form-grid five compact-grid">
+      {% csrf_token %}
+      <input name="device_id" placeholder="Device ID e.g. DEV-005" required>
+      <input name="location" placeholder="Location e.g. Room 302 / Table 12" required>
+      <select name="device_type" required>
+        <option value="">Select type</option>
+        <option>Room</option>
+        <option>Restaurant Table</option>
+        <option>Bar Table</option>
+        <option>Lounge</option>
+      </select>
+      <div class="form-note">New entries are created as active and immediately get a generated QR code.</div>
+      <button class="primary-btn" type="submit">Add Room/Table</button>
+    </form>
+
+    {% if add_success %}
+      <div class="flash-success">{{ add_success }}</div>
+    {% endif %}
+    {% if add_error %}
+      <div class="flash-error">{{ add_error }}</div>
+    {% endif %}
+
+    {% if featured_room %}
+      <div class="qr-preview-bar">
+        <div class="qr-preview-copy">
+          <strong>Latest QR Preview</strong>
+          <span>{{ featured_room.location }} - {{ featured_room.type }} - {{ featured_room.id }}</span>
         </div>
-      {% endfor %}
+        <div class="qr-preview-actions">
+          <a class="mini" href="{% url 'dashboard:guest_preview' %}?device_id={{ featured_room.id }}" target="_blank">Guest QR View</a>
+          <a class="mini" href="{% url 'dashboard:qr_code' featured_room.id %}" download="QR-{{ featured_room.id }}.png">Download QR</a>
+        </div>
+        <div class="qr-preview-thumb">
+          <img src="{% url 'dashboard:qr_code' featured_room.id %}" alt="QR for {{ featured_room.location }}" width="92" height="92">
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>QR Code</th>
+            <th>Device ID</th>
+            <th>Location</th>
+            <th>Type</th>
+            <th>Guest QR View</th>
+            <th>Status</th>
+            <th>QR Actions</th>
+            <th>Edit / Control</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in rooms %}
+            <tr class="search-target">
+              <td>
+                <div class="qr-table-thumb">
+                  <img src="{% url 'dashboard:qr_code' room.id %}" alt="QR for {{ room.location }}" width="88" height="88">
+                </div>
+              </td>
+              <td><strong>{{ room.id }}</strong></td>
+              <td>{{ room.location }}</td>
+              <td>{{ room.type }}</td>
+              <td><a class="inline-link" href="{% url 'dashboard:guest_preview' %}?device_id={{ room.id }}" target="_blank">Open Guest QR View</a></td>
+              <td>
+                <div class="status-stack">
+                  <span class="pill {% if room.online %}paid{% else %}failed{% endif %}">{% if room.online %}Online{% else %}Offline{% endif %}</span>
+                  <span class="pill {% if room.active %}active{% else %}failed{% endif %}">{% if room.active %}Active{% else %}Disabled{% endif %}</span>
+                </div>
+              </td>
+              <td>
+                <div class="action-stack">
+                  <a class="mini" href="{% url 'dashboard:qr_code' room.id %}" download="QR-{{ room.id }}.png">Download</a>
+                  <a class="mini" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">Live Guest Page</a>
+                </div>
+              </td>
+              <td>
+                <form method="post" class="qr-table-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="edit">
+                  <input type="hidden" name="original_device_id" value="{{ room.id }}">
+                  <input name="device_id" value="{{ room.id }}" required>
+                  <input name="location" value="{{ room.location }}" required>
+                  <select name="device_type" required>
+                    <option {% if room.type == 'Room' %}selected{% endif %}>Room</option>
+                    <option {% if room.type == 'Restaurant Table' %}selected{% endif %}>Restaurant Table</option>
+                    <option {% if room.type == 'Bar Table' %}selected{% endif %}>Bar Table</option>
+                    <option {% if room.type == 'Lounge' %}selected{% endif %}>Lounge</option>
+                  </select>
+                  <label class="toggle qr-toggle">
+                    <input type="checkbox" name="active" {% if room.active %}checked{% endif %}>
+                    <i></i>
+                    <span>Active</span>
+                  </label>
+                  <button class="mini" type="submit">Save</button>
+                </form>
+                <form method="post" class="qr-delete-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="device_id" value="{{ room.id }}">
+                  <button class="mini danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </article>
 {% endblock %}

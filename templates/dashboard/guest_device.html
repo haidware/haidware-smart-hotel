@@ -1,301 +1,217 @@
+{% load dashboard_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %} — HAIDWARE</title>
+  <title>{{ page_title }} | HAIDWARE</title>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',Arial,sans-serif}
-    :root{--purple:#5b21b6;--purple-dark:#3b0764;--purple-light:#f3eeff;--purple-mid:#7c3aed;--line:#e5ddf5;--text:#1e0b3a;--muted:#7c6b8a;--green:#16a34a}
-    body{background:#f9f7fe;color:var(--text);min-height:100vh}
-    .g-header{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .back-btn{background:none;border:none;cursor:pointer;color:var(--purple);font-weight:700;font-size:15px;display:flex;align-items:center;gap:5px;min-width:60px}
-    .g-logo{display:flex;align-items:center;gap:10px}
-    .g-logo-h{width:38px;height:38px;background:var(--purple);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:900;flex-shrink:0}
-    .g-logo-text h2{font-size:15px;font-weight:900;letter-spacing:0.5px;color:var(--purple-dark);line-height:1}
-    .g-logo-text p{font-size:9px;letter-spacing:3px;color:var(--muted);margin-top:2px}
-    .room-pill{background:var(--purple-light);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--purple-dark);white-space:nowrap}
-    .g-page{display:none}.g-page.active{display:block}
-    .tabs{display:flex;background:#fff;border-bottom:2px solid var(--line);overflow-x:auto}
-    .tab{flex:1;min-width:90px;padding:14px 10px;border:0;background:transparent;font-weight:800;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
-    .tab.active{color:var(--purple);border-bottom-color:var(--purple)}
-    .tab-content{display:none;padding:20px 16px 120px}.tab-content.active{display:block}
-    .item-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(min-width:480px){.item-grid{grid-template-columns:repeat(3,1fr)}}
-    .item-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center}
-    .item-card .cat{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
-    .item-card h4{font-size:14px;font-weight:700;margin-bottom:8px;line-height:1.3}
-    .item-card .price{font-size:18px;font-weight:900;color:var(--purple);margin-bottom:12px}
-    .item-card button{width:100%;background:var(--purple);color:#fff;border:0;border-radius:12px;padding:10px;font-weight:800;font-size:13px;cursor:pointer}
-    .service-list{display:grid;gap:10px}
-    .service-item{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
-    .service-item strong{display:block;font-size:15px;font-weight:700}
-    .service-item .note{font-size:12px;color:var(--muted);margin-top:3px}
-    .s-price{font-weight:900;color:var(--purple);font-size:16px}
-    .req-btn{background:var(--purple-light);color:var(--purple-dark);border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;margin-top:6px}
-    .cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--purple);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:0.3s;z-index:100}
-    .cart-bar.visible{transform:none}
-    .cart-bar .ci span{font-size:12px;opacity:0.8}
-    .cart-bar .ci strong{display:block;font-size:19px;font-weight:900}
-    .cart-btn{background:#fff;color:var(--purple);border:0;border-radius:14px;padding:12px 22px;font-weight:900;font-size:14px;cursor:pointer}
-    .pay-body{padding:24px 20px 50px;max-width:500px;margin:0 auto}
-    .pay-title-row{display:flex;align-items:center;gap:14px;margin-bottom:24px}
-    .pay-icon{width:52px;height:52px;background:var(--purple-light);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
-    .pay-title-row h2{font-size:26px;font-weight:900}
-    .pay-title-row p{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4}
-    .total-card{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:20px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
-    .total-card .t-label{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:6px}
-    .total-card .t-amount{font-size:42px;font-weight:900;color:var(--text);line-height:1}
-    .total-card .wallet{font-size:52px;opacity:0.45}
-    .psec-title{font-size:16px;font-weight:800;margin-bottom:12px}
-    .bank-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s}
-    .bank-card.selected{border-color:var(--purple)}
-    .radio-dot{width:22px;height:22px;border-radius:50%;border:2px solid #c9b8e0;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:0.2s}
-    .bank-card.selected .radio-dot{border-color:var(--purple);background:var(--purple)}
-    .bank-card.selected .radio-dot::after{content:"";width:8px;height:8px;background:#fff;border-radius:50%;display:block}
-    .bank-logo{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0}
-    .bank-info{flex:1}
-    .bank-info strong{display:block;font-size:15px;font-weight:800}
-    .bank-info .bname{font-size:12px;color:var(--muted);margin:2px 0}
-    .bank-info .bnum{font-size:19px;font-weight:900;margin-top:4px}
-    .copy-btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;color:var(--purple-dark);display:flex;align-items:center;gap:5px;flex-shrink:0}
-    .ref-card{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:16px;padding:20px;margin-bottom:28px;display:grid;grid-template-columns:1fr auto;gap:16px}
-    .ref-left{display:flex;gap:14px;align-items:flex-start}
-    .ref-icon{width:44px;height:44px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-    .ref-label{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:4px}
-    .ref-code{font-size:22px;font-weight:900;margin-bottom:4px}
-    .ref-note{font-size:13px;color:var(--muted)}
-    .ref-aside{border-left:1.5px solid #d4bcf0;padding-left:16px;font-size:13px;color:var(--muted);line-height:1.6;max-width:120px}
-    .ref-aside strong{color:var(--purple);font-weight:800}
-    .confirm-btn{width:100%;background:var(--purple);color:#fff;border:0;border-radius:18px;padding:20px;font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
-    .info-note{background:var(--purple-light);border:1.5px solid #d4bcf0;border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--muted);line-height:1.6}
-    .info-note .shield{font-size:24px}
-    .done-screen{text-align:center;padding:60px 30px}
-    .done-screen .big-icon{font-size:72px;margin-bottom:20px}
-    .done-screen h2{font-size:26px;font-weight:900;margin-bottom:10px}
-    .done-screen p{color:var(--muted);font-size:16px;line-height:1.6}
-    .done-screen button{margin-top:32px;background:var(--purple);color:#fff;border:0;border-radius:16px;padding:16px 32px;font-size:16px;font-weight:900;cursor:pointer}
-    .g-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;background:#16a34a;color:#fff;padding:12px 20px;border-radius:14px;font-weight:800;font-size:14px;display:none;white-space:nowrap}
+    :root { --brand:#7666e8; --brand-dark:#4f458f; --bg:#f4f1eb; --shell:#ece9e3; --card:#fff; --line:#ded8cf; --text:#222; --muted:#777; --success:#177245; --danger:#b91c1c; --warn:#b87815; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--shell); color:var(--text); font-family:Arial,sans-serif; }
+    a { color:inherit; text-decoration:none; }
+    button,input,textarea { font:inherit; }
+    .layout { max-width:1120px; margin:0 auto; padding:24px; display:grid; grid-template-columns:280px 430px; gap:32px; justify-content:center; }
+    .nav { background:#fff; border-radius:22px; padding:22px; box-shadow:0 18px 50px rgba(0,0,0,.08); position:sticky; top:20px; height:max-content; }
+    .nav h1 { margin:0; font-size:22px; font-weight:900; letter-spacing:.04em; }
+    .nav h1 span { color:var(--brand); }
+    .nav p { margin:12px 0 16px; color:var(--muted); font-size:13px; line-height:1.6; }
+    .nav a { display:block; padding:11px 12px; margin:6px 0; border-radius:10px; background:#f7f5ff; color:var(--brand-dark); font-weight:700; font-size:13px; }
+    .meta-box { margin-top:16px; padding:12px; border-radius:12px; background:#f7f5ff; color:#5e5771; font-size:12px; line-height:1.6; word-break:break-word; }
+    .phone { width:430px; min-height:860px; background:var(--bg); border:10px solid #151515; border-radius:38px; overflow:hidden; box-shadow:0 25px 70px rgba(0,0,0,.25); position:relative; }
+    .screen { display:none; min-height:840px; background:var(--bg); }
+    .screen.active { display:block; }
+    .top { height:64px; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 16px 0; border-bottom:1px solid #e8e3db; font-weight:700; }
+    .top.compact { justify-content:center; }
+    .top-btn { border:0; background:transparent; color:var(--brand-dark); font-weight:800; cursor:pointer; min-width:48px; text-align:left; }
+    .room-pill { font-size:12px; background:#f0edff; color:var(--brand-dark); padding:8px 10px; border-radius:999px; border:1px solid #ddd5fb; white-space:nowrap; }
+    .hero { height:210px; margin:0 12px; background:linear-gradient(135deg,#8c745e,#d9c4ad); position:relative; overflow:hidden; }
+    .hero:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 72% 35%,#eee6de 0 17%,transparent 18%), linear-gradient(160deg,#9d8269 0 34%,#d7c2ac 35% 62%,#7f6755 63%); }
+    .hero:after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.08)); }
+    .hero-copy { position:absolute; z-index:2; left:18px; bottom:24px; color:#fff; }
+    .hero-copy small { display:block; opacity:.9; }
+    .hero-copy h1 { margin:6px 0; font-size:24px; }
+    .chip { display:inline-block; margin-top:6px; padding:6px 10px; border:1px solid rgba(255,255,255,.55); border-radius:999px; background:rgba(255,255,255,.16); font-size:11px; letter-spacing:.04em; }
+    .section { padding:0 16px; margin-top:18px; }
+    .section h2 { margin:0 0 12px; font-size:17px; }
+    .cats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .cat { border:1px solid var(--line); border-radius:8px; background:#faf8f3; padding:14px 8px; min-height:106px; display:grid; place-items:center; gap:8px; text-align:center; cursor:pointer; }
+    .cat strong { display:block; font-size:12px; line-height:1.35; }
+    .cat-mark { width:42px; height:42px; border-radius:12px; background:#f0edff; color:var(--brand-dark); display:grid; place-items:center; font-size:12px; font-weight:900; letter-spacing:.08em; }
+    .list { display:flex; flex-direction:column; gap:10px; }
+    .item { display:grid; grid-template-columns:58px 1fr 82px; gap:10px; align-items:center; border:1px solid var(--line); border-radius:10px; background:#fff; padding:10px; }
+    .thumb { width:58px; height:58px; border-radius:8px; background:#eee8de; display:grid; place-items:center; color:var(--brand-dark); font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+    .item h3 { margin:0 0 4px; font-size:14px; }
+    .subtle { color:var(--muted); font-size:12px; line-height:1.45; }
+    .price { margin-top:6px; font-size:13px; font-weight:900; }
+    .mini,.ghost,.primary,.copy-btn { border-radius:10px; font-weight:800; cursor:pointer; }
+    .mini { width:100%; border:1px solid #d4cfe8; background:#fff; color:var(--brand-dark); padding:9px 10px; font-size:12px; }
+    .body { padding:14px; }
+    .tabs { display:flex; gap:8px; overflow:auto; padding:12px 14px; background:#fff; }
+    .tab { padding:8px 12px; border:1px solid #d9d2e9; border-radius:999px; white-space:nowrap; background:transparent; font-size:12px; cursor:pointer; }
+    .tab.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    .detail-hero { height:245px; background:linear-gradient(135deg,#d8b68d,#8b6749); display:grid; place-items:center; color:#fff; font-size:36px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; position:relative; }
+    .detail-hero:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.22)); }
+    .detail-hero span { position:relative; z-index:1; }
+    .detail-content { padding:17px; }
+    .detail-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .detail-head h2 { margin:0 0 6px; font-size:22px; }
+    .detail-price { font-size:20px; font-weight:900; color:var(--brand-dark); white-space:nowrap; }
+    .description { margin:12px 0; color:var(--muted); font-size:14px; line-height:1.65; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; margin:13px 0; }
+    .meta span { padding:7px 10px; border-radius:999px; background:#f0edff; color:var(--brand-dark); font-size:12px; font-weight:800; }
+    .qty-box,.card,.bank,.notice,.status-card { border:1px solid var(--line); border-radius:14px; background:#fff; }
+    .qty-box { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin:14px 0; }
+    .qty-control { display:flex; align-items:center; gap:12px; font-weight:900; }
+    .qty-control button { width:34px; height:34px; border-radius:50%; border:1px solid #d7d0e6; background:#fff; color:var(--brand-dark); font-size:20px; cursor:pointer; }
+    .instruction { width:100%; min-height:78px; border:1px solid var(--line); border-radius:11px; padding:12px; resize:none; background:#fff; }
+    .primary { display:flex; justify-content:space-between; align-items:center; width:100%; border:0; background:var(--brand); color:#fff; padding:14px 16px; font-size:15px; margin-top:14px; }
+    .card { padding:14px; margin-bottom:12px; }
+    .row { display:flex; justify-content:space-between; gap:14px; padding:10px 0; border-bottom:1px solid #eee9e2; font-size:14px; }
+    .row:last-child { border-bottom:0; }
+    .row.total { font-size:18px; font-weight:900; color:var(--brand-dark); }
+    .ghost { display:block; width:100%; border:1px solid #d7d0e6; background:#fff; color:var(--brand-dark); padding:14px; text-align:center; margin-top:12px; }
+    .payment-body { padding:20px 18px 40px; }
+    .payment-body h2 { margin:0 0 4px; font-size:26px; }
+    .payment-body p { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+    .amount-box { display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-radius:18px; background:#f0edff; border:1px solid #d9d2fb; margin:18px 0 22px; }
+    .amount-box small { display:block; margin-bottom:6px; color:var(--brand-dark); font-weight:700; }
+    .amount-box strong { font-size:34px; color:var(--text); }
+    .section-title { margin:0 0 10px; font-size:15px; font-weight:800; }
+    .bank { padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:12px; cursor:pointer; }
+    .bank.selected { border-color:var(--brand); box-shadow:0 0 0 1px var(--brand) inset; }
+    .radio { width:20px; height:20px; border-radius:50%; border:2px solid #c9b8e0; flex-shrink:0; }
+    .bank.selected .radio { background:var(--brand); border-color:var(--brand); box-shadow:inset 0 0 0 5px #fff; }
+    .bank-logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:18px; font-weight:900; flex-shrink:0; }
+    .bank-meta { flex:1; }
+    .bank-meta strong,.bank-meta small,.bank-meta span { display:block; }
+    .bank-meta small,.bank-meta span { color:var(--muted); font-size:12px; margin-top:2px; }
+    .copy-btn { border:1px solid #d7d0e6; background:#fff; color:var(--brand-dark); padding:9px 11px; font-size:12px; flex-shrink:0; }
+    .notice { margin-top:14px; padding:16px; color:var(--muted); font-size:13px; line-height:1.65; }
+    .center { text-align:center; padding:56px 24px; }
+    .center-icon { width:84px; height:84px; margin:0 auto 18px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:28px; font-weight:900; background:var(--brand); }
+    .center-icon.waiting { background:var(--warn); }
+    .center h2 { margin:0 0 10px; font-size:28px; }
+    .center p { margin:0 auto 18px; max-width:320px; color:var(--muted); font-size:15px; line-height:1.7; }
+    .status-card { max-width:330px; margin:20px auto 0; padding:14px 16px; text-align:left; }
+    .pill { display:inline-block; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
+    .pill.pending { background:#fff4db; color:#9a6b00; }
+    .pill.confirmed { background:#e9f8ef; color:var(--success); }
+    .progress { padding:16px; }
+    .progress h3 { margin:0 0 16px; font-size:18px; }
+    .step { display:grid; grid-template-columns:34px 1fr; gap:12px; padding-bottom:20px; position:relative; }
+    .step:not(:last-child):after { content:""; position:absolute; left:16px; top:30px; bottom:0; width:2px; background:#d9d3e8; }
+    .dot { width:33px; height:33px; border-radius:50%; border:2px solid #d2ccde; display:grid; place-items:center; background:#fff; z-index:2; font-weight:900; color:var(--brand-dark); }
+    .step.done .dot { background:var(--brand); border-color:var(--brand); color:#fff; }
+    .step h4 { margin:3px 0; font-size:15px; }
+    .step p { margin:0; color:var(--muted); font-size:12px; line-height:1.6; }
+    .cart-bar { position:absolute; left:0; right:0; bottom:0; background:var(--brand); color:#fff; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; transform:translateY(100%); transition:.3s; z-index:20; }
+    .cart-bar.visible { transform:translateY(0); }
+    .cart-bar span { font-size:12px; opacity:.82; }
+    .cart-bar strong { display:block; margin-top:4px; font-size:20px; }
+    .cart-open { border:0; background:#fff; color:var(--brand-dark); border-radius:14px; padding:12px 18px; font-weight:900; cursor:pointer; }
+    .toast { position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:300; background:var(--success); color:#fff; padding:12px 18px; border-radius:12px; font-weight:800; font-size:13px; display:none; max-width:calc(100vw - 32px); text-align:center; }
+    .toast.error { background:var(--danger); }
+    .toast.shown { display:block; }
+    @media (max-width:860px) { .layout { display:block; padding:0; } .nav { display:none; } .phone { width:100%; min-height:100vh; border:0; border-radius:0; } .screen { min-height:100vh; } }
   </style>
 </head>
-<body>
-
-<!-- BROWSE PAGE -->
-<div id="browsePage" class="g-page active">
-  <header class="g-header">
-    <div style="min-width:60px"></div>
-    <div class="g-logo">
-      <div class="g-logo-h">H</div>
-      <div class="g-logo-text">
-        <h2>HAIDWARE</h2>
-        <p>SMART HOTEL EXPERIENCE</p>
-      </div>
-    </div>
-    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('menu',this)">&#x1F37D;&#xFE0F; Kitchen</button>
-    <button class="tab" onclick="showTab('bar',this)">&#x1F379; Bar</button>
-    <button class="tab" onclick="showTab('services',this)">&#x1F6CE;&#xFE0F; Services</button>
-  </div>
-
-  <div id="menu" class="tab-content active">
-    <div class="item-grid">
-      {% for item in menu_items %}{% if item.id|slice:":3" == "KIT" %}
-        <div class="item-card">
-          <div class="cat">{{ item.category }}</div>
-          <h4>{{ item.name }}</h4>
-          <div class="price">&#x20A6;{{ item.price|floatformat:0 }}</div>
-          <button onclick="addToCart('{{ item.name|escapejs }}',{{ item.price }})">Add to Order</button>
+<body data-start-page="{{ initial_page }}">
+  <div class="layout">
+    <aside class="nav">
+      <h1>HAID<span>WARE</span></h1>
+      <p>Guest mobile flow. This is the customer journey shown after scanning a room or table QR code.</p>
+      <a href="#" onclick="showScreen('homePage'); return false;">1. Guest Homepage</a>
+      <a href="#" onclick="showScreen('menuPage'); setMenuTab('kitchen'); return false;">2. Menu and Categories</a>
+      <a href="#" onclick="openDefaultDetail(); return false;">3. Item Description</a>
+      <a href="#" onclick="showScreen('cartPage'); renderCart(); return false;">4. Order Summary</a>
+      <a href="#" onclick="preparePayment(); showScreen('paymentPage'); return false;">5. Bank Transfer</a>
+      <a href="#" onclick="showScreen('waitingPage'); return false;">6. Verification</a>
+      <a href="#" onclick="showScreen('successPage'); return false;">7. Confirmation</a>
+      <a href="#" onclick="showScreen('trackingPage'); return false;">8. Track Order</a>
+      <div class="meta-box"><strong>Customer entry point</strong><br>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}<br>Device: {{ room_id }}</div>
+      <div class="meta-box">QR destination:<br>{{ request.build_absolute_uri }}</div>
+    </aside>
+    <main class="phone">
+      <section id="homePage" class="screen active">
+        <header class="top compact"><span>HAIDWARE Hospitality</span></header>
+        <div class="hero"><div class="hero-copy"><small>Welcome, guest</small><h1>Comfort at your fingertips</h1><span class="chip">{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %} · {{ room_id }}</span></div></div>
+        <div class="section"><h2>What would you like today?</h2><div class="cats"><button class="cat" type="button" onclick="showScreen('menuPage'); setMenuTab('kitchen');"><span class="cat-mark">KIT</span><strong>Food Menu</strong></button><button class="cat" type="button" onclick="showScreen('menuPage'); setMenuTab('bar');"><span class="cat-mark">BAR</span><strong>Drinks and Bar</strong></button><button class="cat" type="button" onclick="showScreen('menuPage'); setMenuTab('services');"><span class="cat-mark">SRV</span><strong>Hotel Services</strong></button></div></div>
+        <div class="section"><h2>Popular choices</h2><div class="list">{% for item in popular_items %}<div class="item"><div class="thumb">{{ item.category|slice:":3"|upper }}</div><div><h3>{{ item.name }}</h3><div class="subtle">{% if item.description %}{{ item.description }}{% elif item.note %}{{ item.note }}{% else %}Prepared for guest service.{% endif %}</div><div class="price">NGN {{ item.price|floatformat:0 }}</div></div><button class="mini" type="button" onclick="openDetail('{{ item.id|escapejs }}')">View</button></div>{% empty %}<div class="card"><div class="subtle">No guest items are currently available.</div></div>{% endfor %}</div></div>
+      </section>
+      <section id="menuPage" class="screen">
+        <header class="top"><button class="top-btn" type="button" onclick="showScreen('homePage')">Back</button><span>Guest Menu</span><span class="room-pill">{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</span></header>
+        <div class="tabs"><button id="tab-kitchen" class="tab active" type="button" onclick="setMenuTab('kitchen')">Kitchen</button><button id="tab-bar" class="tab" type="button" onclick="setMenuTab('bar')">Bar</button><button id="tab-services" class="tab" type="button" onclick="setMenuTab('services')">Services</button></div>
+        <div class="body"><div id="panel-kitchen" class="panel active"><div class="list">{% for item in kitchen_items %}<div class="item"><div class="thumb">KIT</div><div><h3>{{ item.name }}</h3><div class="subtle">{{ item.category }}</div><div class="price">NGN {{ item.price|floatformat:0 }}</div></div><button class="mini" type="button" onclick="openDetail('{{ item.id|escapejs }}')">Details</button></div>{% empty %}<div class="card"><div class="subtle">No kitchen items available right now.</div></div>{% endfor %}</div></div><div id="panel-bar" class="panel"><div class="list">{% for item in bar_items %}<div class="item"><div class="thumb">BAR</div><div><h3>{{ item.name }}</h3><div class="subtle">{{ item.category }}</div><div class="price">NGN {{ item.price|floatformat:0 }}</div></div><button class="mini" type="button" onclick="openDetail('{{ item.id|escapejs }}')">Details</button></div>{% empty %}<div class="card"><div class="subtle">No bar items available right now.</div></div>{% endfor %}</div></div><div id="panel-services" class="panel"><div class="list">{% for item in services %}<div class="item"><div class="thumb">SRV</div><div><h3>{{ item.name }}</h3><div class="subtle">{{ item.note }}</div><div class="price">{% if item.price > 0 %}NGN {{ item.price|floatformat:0 }}{% else %}Free{% endif %}</div></div><button class="mini" type="button" onclick="openDetail('{{ item.id|escapejs }}')">Request</button></div>{% empty %}<div class="card"><div class="subtle">No services available right now.</div></div>{% endfor %}</div></div><button class="ghost" type="button" onclick="showScreen('cartPage'); renderCart();">Review Order</button></div>
+      </section>
+      <section id="detailPage" class="screen">
+        <header class="top"><button class="top-btn" type="button" onclick="showScreen('menuPage')">Back</button><span>Item Details</span><span class="room-pill">{{ room_id }}</span></header>
+        <div class="detail-hero"><span id="detailBadge">KIT</span></div>
+        <div class="detail-content">
+          <div class="detail-head"><div><h2 id="detailName">{% if featured_item %}{{ featured_item.name }}{% else %}Guest Item{% endif %}</h2><small id="detailCategory" class="subtle">{% if featured_item %}{{ featured_item.category }}{% endif %}</small></div><div id="detailPrice" class="detail-price">{% if featured_item %}NGN {{ featured_item.price|floatformat:0 }}{% else %}NGN 0{% endif %}</div></div>
+          <p id="detailDescription" class="description">{% if featured_item and featured_item.description %}{{ featured_item.description }}{% elif featured_item and featured_item.note %}{{ featured_item.note }}{% else %}Prepared and delivered directly to your room or service point.{% endif %}</p>
+          <div class="meta"><span id="detailMetaKind">Guest Service</span><span id="detailMetaSpeed">Fast delivery</span><span id="detailMetaAvailability">Available</span></div>
+          <div class="qty-box"><strong>Quantity</strong><div class="qty-control"><button type="button" onclick="changeQty(-1)">-</button><span id="detailQty">1</span><button type="button" onclick="changeQty(1)">+</button></div></div>
+          <label for="guestInstructions" style="display:block;font-size:13px;font-weight:800;margin-bottom:7px">Special instructions</label>
+          <textarea id="guestInstructions" class="instruction" placeholder="Example: no pepper, extra garnish, or delivery note"></textarea>
+          <button id="detailAction" class="primary" type="button" onclick="addCurrentItemToCart()"><span>Add to Order</span><span id="detailActionPrice">{% if featured_item %}NGN {{ featured_item.price|floatformat:0 }}{% else %}NGN 0{% endif %}</span></button>
         </div>
-      {% endif %}{% endfor %}
-    </div>
+      </section>
+      <section id="cartPage" class="screen">
+        <header class="top"><button class="top-btn" type="button" onclick="showScreen('menuPage')">Back</button><span>Order Summary</span><span class="room-pill">{{ room_id }}</span></header>
+        <div class="body"><div id="cartItemsCard" class="card"><div class="subtle">Your cart is empty.</div></div><div class="card"><div class="row"><span>Subtotal</span><strong id="subtotalValue">NGN 0</strong></div><div class="row"><span>Service charge</span><strong>NGN 0</strong></div><div class="row total"><span>Total</span><span id="totalValue">NGN 0</span></div></div><button class="primary" type="button" onclick="preparePayment(); showScreen('paymentPage');"><span>Continue to Payment</span><span id="cartButtonTotal">NGN 0</span></button><button class="ghost" type="button" onclick="showScreen('menuPage')">Continue Browsing</button></div>
+      </section>
+      <section id="paymentPage" class="screen">
+        <header class="top"><button class="top-btn" type="button" onclick="showScreen('cartPage')">Back</button><span>Bank Transfer</span><span class="room-pill">{{ room_id }}</span></header>
+        <div class="payment-body"><h2>Payment</h2><p>Please transfer the exact amount to one of the hotel accounts below, then submit your transfer for confirmation.</p><div class="amount-box"><div><small>Total to pay</small><strong id="paymentTotal">NGN 0</strong></div><div>NGN</div></div><div class="section-title">1. Select hotel bank account</div>{% for acct in bank_accounts %}<div class="bank {% if forloop.first %}selected{% endif %}" data-bank="{{ acct.bank|escapejs }}" data-account="{{ acct.number|escapejs }}" onclick="selectBank(this)"><div class="radio"></div><div class="bank-logo" style="background:{{ acct.bg }};color:{{ acct.fg }}">{{ acct.icon }}</div><div class="bank-meta"><strong>{{ acct.bank }}</strong><small>{{ acct.name }}</small><span>{{ acct.number }}</span></div><button class="copy-btn" type="button" onclick="copyAccount(event, '{{ acct.number|escapejs }}')">Copy</button></div>{% endfor %}<div class="section-title" style="margin-top:24px;">2. Use this reference for your transfer</div><div class="card"><strong style="display:block;font-size:12px;color:var(--brand-dark);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;">Transfer reference</strong><div id="referenceCode" style="font-size:24px;font-weight:900;margin-bottom:6px;">{{ submitted_reference|default:'--' }}</div><p style="margin:0;color:var(--muted);font-size:13px;line-height:1.6;">This reference helps hotel staff confirm your payment quickly. Please transfer the exact amount shown above.</p></div><div class="section-title" style="margin-top:24px;">3. After transfer</div><form id="transferForm" method="post">{% csrf_token %}<input type="hidden" name="action" value="submit_transfer"><input type="hidden" name="reference" id="inputReference"><input type="hidden" name="amount" id="inputAmount"><input type="hidden" name="method" id="inputMethod"><input type="hidden" name="account" id="inputAccount"><button class="primary" type="submit"><span>I Have Made the Transfer</span><span>Submit</span></button></form><div class="notice">Your order is submitted after hotel staff confirms your payment. You can return later with your reference to check progress.</div></div>
+      </section>
+      <section id="waitingPage" class="screen">
+        <header class="top compact"><span>Payment Verification</span></header>
+        <div class="center"><div class="center-icon waiting">P</div><h2>Waiting for confirmation</h2><p>Hotel staff are verifying your transfer. Your request will move forward automatically after confirmation.</p><div class="status-card"><div class="row"><span>Room</span><strong>{% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</strong></div><div class="row"><span>Reference</span><strong>{{ submitted_reference|default:'--' }}</strong></div><div class="row"><span>Status</span><span class="pill pending">{% if submitted_payment %}{{ submitted_payment.status }}{% else %}Pending Confirmation{% endif %}</span></div></div><button class="ghost" type="button" onclick="showScreen('trackingPage')">Track Order</button><button class="ghost" type="button" onclick="showScreen('homePage')">Return to Homepage</button></div>
+      </section>
+      <section id="successPage" class="screen">
+        <header class="top compact"><span>Order Confirmed</span></header>
+        <div class="center"><div class="center-icon">OK</div><h2>Payment confirmed</h2><p>Your order has been received and released to the appropriate hotel department.</p><div class="status-card"><div class="row"><span>Order number</span><strong>{% if submitted_payment %}{{ submitted_payment.order }}{% else %}--{% endif %}</strong></div><div class="row"><span>Reference</span><strong>{{ submitted_reference|default:'--' }}</strong></div><div class="row"><span>Status</span><span class="pill confirmed">Confirmed</span></div></div><button class="ghost" type="button" onclick="showScreen('trackingPage')">Track Order</button></div>
+      </section>
+      <section id="trackingPage" class="screen">
+        <header class="top"><button class="top-btn" type="button" onclick="showScreen('{% if submitted_payment %}{{ initial_page }}{% else %}homePage{% endif %}')">Back</button><span>Track Order</span><span class="room-pill">{% if submitted_payment %}{{ submitted_payment.order }}{% else %}Live{% endif %}</span></header>
+        <div class="body"><div class="card progress"><h3>Order progress</h3><div class="step done"><div class="dot">1</div><div><h4>Transfer submitted</h4><p>Your bank transfer reference has been recorded.</p></div></div><div class="step {% if submitted_payment and submitted_payment.status == 'Confirmed' %}done{% endif %}"><div class="dot">2</div><div><h4>Payment confirmation</h4><p>{% if submitted_payment and submitted_payment.status == 'Confirmed' %}Hotel staff have confirmed your payment.{% else %}Hotel staff are currently verifying your transfer.{% endif %}</p></div></div><div class="step {% if submitted_payment and submitted_payment.status == 'Confirmed' %}done{% endif %}"><div class="dot">3</div><div><h4>Order received</h4><p>{% if submitted_payment and submitted_payment.status == 'Confirmed' %}The assigned department has received your request.{% else %}This begins immediately after payment confirmation.{% endif %}</p></div></div><div class="step"><div class="dot">4</div><div><h4>Preparing</h4><p>Your items or service request will be processed by hotel staff.</p></div></div><div class="step"><div class="dot">5</div><div><h4>Delivered or completed</h4><p>Final delivery to your room or service point.</p></div></div></div><button class="ghost" type="button" onclick="showScreen('homePage')">Return to Homepage</button></div>
+      </section>
+      <div id="cartBar" class="cart-bar"><div><span id="cartCount">0 items</span><strong id="cartTotalBar">NGN 0</strong></div><button class="cart-open" type="button" onclick="showScreen('cartPage'); renderCart();">Open Cart</button></div>
+    </main>
   </div>
-
-  <div id="bar" class="tab-content">
-    <div class="item-grid">
-      {% for item in menu_items %}{% if item.id|slice:":3" == "BAR" %}
-        <div class="item-card">
-          <div class="cat">{{ item.category }}</div>
-          <h4>{{ item.name }}</h4>
-          <div class="price">&#x20A6;{{ item.price|floatformat:0 }}</div>
-          <button onclick="addToCart('{{ item.name|escapejs }}',{{ item.price }})">Add to Order</button>
-        </div>
-      {% endif %}{% endfor %}
-    </div>
-  </div>
-
-  <div id="services" class="tab-content">
-    <div class="service-list">
-      {% for svc in services %}
-        <div class="service-item">
-          <div>
-            <strong>{{ svc.name }}</strong>
-            <div class="note">{{ svc.note }}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div class="s-price">{% if svc.price > 0 %}&#x20A6;{{ svc.price|floatformat:0 }}{% else %}Free{% endif %}</div>
-            <button class="req-btn" onclick="addToCart('{{ svc.name|escapejs }}',{{ svc.price }})">Request</button>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-
-  <div class="cart-bar" id="cartBar">
-    <div class="ci">
-      <span id="cartCount">0 items</span>
-      <strong id="cartTotal">&#x20A6;0</strong>
-    </div>
-    <button class="cart-btn" onclick="goToPayment()">Proceed to Pay &rarr;</button>
-  </div>
-</div>
-
-<!-- PAYMENT PAGE -->
-<div id="paymentPage" class="g-page">
-  <header class="g-header">
-    <button class="back-btn" onclick="showPage('browsePage')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      Back
-    </button>
-    <div class="g-logo">
-      <div class="g-logo-h">H</div>
-      <div class="g-logo-text"><h2>HAIDWARE</h2><p>SMART HOTEL EXPERIENCE</p></div>
-    </div>
-    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
-  </header>
-
-  <div class="pay-body">
-    <div class="pay-title-row">
-      <div class="pay-icon">&#x1F4B3;</div>
-      <div>
-        <h2>Payment</h2>
-        <p>Please transfer the exact amount to one of the hotel accounts below.</p>
-      </div>
-    </div>
-
-    <div class="total-card">
-      <div>
-        <div class="t-label">Total to Pay</div>
-        <div class="t-amount" id="payTotal">&#x20A6;0</div>
-      </div>
-      <div class="wallet">&#x1F45B;</div>
-    </div>
-
-    <div class="psec-title">1. Select Hotel Bank Account</div>
-    {% for acct in bank_accounts %}
-      <div class="bank-card {% if forloop.first %}selected{% endif %}" id="bank{{ forloop.counter }}" onclick="selectBank(this)">
-        <div class="radio-dot"></div>
-        <div class="bank-logo" style="background:{{ acct.bg }};color:{{ acct.fg }}">{{ acct.icon }}</div>
-        <div class="bank-info">
-          <strong>{{ acct.bank }}</strong>
-          <div class="bname">{{ acct.name }}</div>
-          <div class="bnum">{{ acct.number }}</div>
-        </div>
-        <button class="copy-btn" onclick="copyNum(event,'{{ acct.number }}')">&#x1F4CB; Copy Account Number</button>
-      </div>
-    {% endfor %}
-
-    <div class="psec-title" style="margin-top:24px">2. Use this reference for your transfer</div>
-    <div class="ref-card">
-      <div class="ref-left">
-        <div class="ref-icon">&#x1F3F7;</div>
-        <div>
-          <div class="ref-label">Transfer Reference</div>
-          <div class="ref-code" id="refCode">&mdash;</div>
-          <div class="ref-note">This helps us confirm your payment quickly.</div>
-        </div>
-      </div>
-      <div class="ref-aside">&#x2139; Please transfer the <strong>exact amount</strong> shown above.</div>
-    </div>
-
-    <div class="psec-title">3. After transfer</div>
-    <button class="confirm-btn" onclick="showPage('confirmPage')">&#x2713;&nbsp;&nbsp;I Have Made the Transfer</button>
-    <div class="info-note">
-      <span class="shield">&#x1F6E1;</span>
-      <span>Your order will be submitted after hotel staff confirms your payment. You will receive a notification once your payment is confirmed.</span>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRMATION PAGE -->
-<div id="confirmPage" class="g-page">
-  <header class="g-header">
-    <div style="min-width:60px"></div>
-    <div class="g-logo">
-      <div class="g-logo-h">H</div>
-      <div class="g-logo-text"><h2>HAIDWARE</h2><p>SMART HOTEL EXPERIENCE</p></div>
-    </div>
-    <div class="room-pill">&#x1F6CF; {% if room %}{{ room.location }}{% else %}{{ room_id }}{% endif %}</div>
-  </header>
-  <div class="done-screen">
-    <div class="big-icon">&#x2705;</div>
-    <h2>Transfer Submitted!</h2>
-    <p>Your order is now awaiting confirmation.<br>Hotel staff will verify your bank transfer shortly.</p>
-    <button onclick="goHome()">Back to Menu</button>
-  </div>
-</div>
-
-<div class="g-toast" id="gToast"></div>
-
-<script>
-  let cart = [], cartTotal = 0;
-  const roomLabel = "{% if room %}{{ room.location|escapejs }}{% else %}{{ room_id }}{% endif %}";
-  const ref = roomLabel.replace(/\s+/g,'') + '-' + Math.floor(1000 + Math.random() * 9000);
-
-  function showTab(id, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  function addToCart(name, price) {
-    cart.push({name, price}); cartTotal += price;
-    document.getElementById('cartCount').textContent = cart.length + ' item' + (cart.length > 1 ? 's' : '');
-    document.getElementById('cartTotal').textContent = '\u20A6' + cartTotal.toLocaleString();
-    document.getElementById('cartBar').classList.add('visible');
-    toast(name + ' added \u2713');
-  }
-
-  function goToPayment() {
-    if (!cart.length) return;
-    document.getElementById('payTotal').textContent = '\u20A6' + cartTotal.toLocaleString();
-    document.getElementById('refCode').textContent = ref;
-    showPage('paymentPage');
-  }
-
-  function showPage(id) {
-    document.querySelectorAll('.g-page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0, 0);
-  }
-
-  function selectBank(el) {
-    document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-  }
-
-  function copyNum(e, num) {
-    e.stopPropagation();
-    navigator.clipboard.writeText(num).catch(function(){});
-    toast('Account number copied!');
-  }
-
-  function goHome() {
-    cart = []; cartTotal = 0;
-    document.getElementById('cartCount').textContent = '0 items';
-    document.getElementById('cartTotal').textContent = '\u20A60';
-    document.getElementById('cartBar').classList.remove('visible');
-    showPage('browsePage');
-  }
-
-  function toast(msg) {
-    const t = document.getElementById('gToast');
-    t.textContent = msg; t.style.display = 'block';
-    setTimeout(function(){ t.style.display = 'none'; }, 2500);
-  }
-</script>
+  {% if submission_error %}<div class="toast error shown">{{ submission_error }}</div>{% endif %}
+  <div id="toast" class="toast"></div>
+  <script>
+    const guestCatalog = [
+      {% for item in kitchen_items %}{id:"{{ item.id|escapejs }}",kind:"Kitchen",badge:"KIT",name:"{{ item.name|escapejs }}",category:"{{ item.category|escapejs }}",price:{{ item.price }},description:"{{ item.description|default:'Prepared fresh for guest service.'|escapejs }}"},{% endfor %}
+      {% for item in bar_items %}{id:"{{ item.id|escapejs }}",kind:"Bar",badge:"BAR",name:"{{ item.name|escapejs }}",category:"{{ item.category|escapejs }}",price:{{ item.price }},description:"{{ item.description|default:'Prepared fresh for guest service.'|escapejs }}"},{% endfor %}
+      {% for item in services %}{id:"{{ item.id|escapejs }}",kind:"Service",badge:"SRV",name:"{{ item.name|escapejs }}",category:"{{ item.category|escapejs }}",price:{{ item.price }},description:"{{ item.note|default:'Ready for guest request.'|escapejs }}"},{% endfor %}
+    ];
+    let currentItem = guestCatalog.length ? guestCatalog[0] : null;
+    let currentQty = 1;
+    let cart = [];
+    function money(value) { return 'NGN ' + Number(value || 0).toLocaleString(); }
+    function showScreen(id) { document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active')); const next = document.getElementById(id); if (next) { next.classList.add('active'); window.scrollTo(0, 0); } }
+    function setMenuTab(name) { ['kitchen','bar','services'].forEach((key) => { const tab = document.getElementById('tab-' + key); const panel = document.getElementById('panel-' + key); if (tab) tab.classList.toggle('active', key === name); if (panel) panel.classList.toggle('active', key === name); }); }
+    function openDetail(id) { const item = guestCatalog.find((entry) => entry.id === id); if (!item) return; currentItem = item; currentQty = 1; document.getElementById('detailBadge').textContent = item.badge; document.getElementById('detailName').textContent = item.name; document.getElementById('detailCategory').textContent = item.category; document.getElementById('detailPrice').textContent = item.price > 0 ? money(item.price) : 'Free'; document.getElementById('detailDescription').textContent = item.description; document.getElementById('detailMetaKind').textContent = item.kind; document.getElementById('detailMetaSpeed').textContent = item.kind === 'Service' ? 'Fast response' : 'Prepared on request'; document.getElementById('detailMetaAvailability').textContent = 'Available'; document.getElementById('detailQty').textContent = String(currentQty); document.getElementById('guestInstructions').value = ''; document.getElementById('detailAction').firstElementChild.textContent = item.kind === 'Service' ? 'Request Service' : 'Add to Order'; document.getElementById('detailActionPrice').textContent = item.price > 0 ? money(item.price) : 'Free'; showScreen('detailPage'); }
+    function openDefaultDetail() { if (currentItem) openDetail(currentItem.id); }
+    function changeQty(change) { currentQty = Math.max(1, currentQty + change); document.getElementById('detailQty').textContent = String(currentQty); }
+    function addCurrentItemToCart() { if (!currentItem) { toast('No item selected.', true); return; } const note = document.getElementById('guestInstructions').value.trim(); cart.push({ id: currentItem.id, name: currentItem.name, price: Number(currentItem.price || 0), quantity: currentQty, note: note, kind: currentItem.kind }); updateCartBar(); toast(currentItem.name + ' added to your order.'); showScreen('cartPage'); renderCart(); }
+    function cartTotal() { return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); }
+    function updateCartBar() { const count = cart.reduce((sum, item) => sum + item.quantity, 0); document.getElementById('cartCount').textContent = count + ' item' + (count === 1 ? '' : 's'); document.getElementById('cartTotalBar').textContent = money(cartTotal()); document.getElementById('cartBar').classList.toggle('visible', count > 0); }
+    function escapeHtml(value) { return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+    function renderCart() { const card = document.getElementById('cartItemsCard'); if (!cart.length) { card.innerHTML = '<div class="subtle">Your cart is empty.</div>'; } else { card.innerHTML = cart.map((item) => { const noteLine = item.note ? '<div class="subtle">Note: ' + escapeHtml(item.note) + '</div>' : ''; return '<div class="row"><div><strong>' + item.quantity + ' x ' + escapeHtml(item.name) + '</strong>' + noteLine + '</div><strong>' + money(item.price * item.quantity) + '</strong></div>'; }).join(''); } const total = cartTotal(); document.getElementById('subtotalValue').textContent = money(total); document.getElementById('totalValue').textContent = money(total); document.getElementById('cartButtonTotal').textContent = money(total); document.getElementById('paymentTotal').textContent = money(total); }
+    function buildReference() { const roomLabel = '{% if room %}{{ room.location|escapejs }}{% else %}{{ room_id|escapejs }}{% endif %}'.replace(/\s+/g, '').toUpperCase(); const seed = String(Math.floor(1000 + Math.random() * 9000)); return roomLabel + '-' + seed; }
+    function preparePayment() { renderCart(); if (cartTotal() > 0 && document.getElementById('referenceCode').textContent.trim() === '--') { document.getElementById('referenceCode').textContent = buildReference(); } }
+    function selectBank(card) { document.querySelectorAll('.bank').forEach((entry) => entry.classList.remove('selected')); card.classList.add('selected'); }
+    function copyAccount(event, number) { event.stopPropagation(); navigator.clipboard.writeText(number).then(() => toast('Account number copied.')).catch(() => toast('Copy failed. Please copy manually.', true)); }
+    function toast(message, isError) { const box = document.getElementById('toast'); box.textContent = message; box.classList.toggle('error', Boolean(isError)); box.style.display = 'block'; window.clearTimeout(box._timer); box._timer = window.setTimeout(() => { box.style.display = 'none'; }, 2400); }
+    const transferForm = document.getElementById('transferForm');
+    if (transferForm) { transferForm.addEventListener('submit', function (event) { const total = cartTotal(); const selected = document.querySelector('.bank.selected'); if (!total) { event.preventDefault(); toast('Add at least one item before paying.', true); return; } if (!selected) { event.preventDefault(); toast('Select a hotel bank account first.', true); return; } const referenceCode = document.getElementById('referenceCode'); if (referenceCode.textContent.trim() === '--') { referenceCode.textContent = buildReference(); } document.getElementById('inputReference').value = referenceCode.textContent.trim(); document.getElementById('inputAmount').value = String(total); document.getElementById('inputMethod').value = selected.dataset.bank || ''; document.getElementById('inputAccount').value = selected.dataset.account || ''; }); }
+    updateCartBar(); renderCart(); const startPage = document.body.dataset.startPage || 'homePage'; if (startPage !== 'homePage') { showScreen(startPage); }
+  </script>
 </body>
 </html>

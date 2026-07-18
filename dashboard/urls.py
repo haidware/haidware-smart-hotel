@@ -9,6 +9,7 @@ urlpatterns=[
  path('admin-logout/',auth_views.admin_logout,name='admin_logout'),
  path('dashboard/',views.overview,name='overview'),path('device-page/',views.device_page,name='device_page'),
  path('app-web/',views.app_web,name='app_web'),
+ path('guest-preview/',views.guest_preview,name='guest_preview'),
  path('kitchen/',views.kitchen,name='kitchen'),path('bar/',views.bar,name='bar'),
  path('services/',views.services,name='services'),path('orders/',views.orders,name='orders'),
  path('payments/',views.payments,name='payments'),path('workflow/',views.workflow,name='workflow'),

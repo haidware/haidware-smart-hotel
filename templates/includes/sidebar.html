@@ -1,34 +1,36 @@
 {% load dashboard_tags %}
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="{% url 'dashboard:overview' %}">
-    <h1>HAIDWARE</h1>
-    <p>ADMIN PORTAL</p>
+    <h1>HAIDWARE ADMIN</h1>
+    <p>PORTAL</p>
   </a>
   <nav>
     <div class="nav-section">
       <span>DASHBOARD</span>
-      <a class="nav-link {% nav_active 'overview' %}" href="{% url 'dashboard:overview' %}">🏠 Overview</a>
+      <a class="nav-link {% nav_active 'overview' %}" href="{% url 'dashboard:overview' %}">Overview</a>
     </div>
     <div class="nav-section">
-      <span>SMART HOTEL DEVICE</span>
-      <a class="nav-link {% nav_active 'device_page' %}" href="{% url 'dashboard:device_page' %}">📱 Device Page</a>
-      <a class="nav-link {% nav_active 'kitchen' %}" href="{% url 'dashboard:kitchen' %}">🍽️ Kitchen Menu</a>
-      <a class="nav-link {% nav_active 'bar' %}" href="{% url 'dashboard:bar' %}">🍹 Bar Menu</a>
-      <a class="nav-link {% nav_active 'services' %}" href="{% url 'dashboard:services' %}">🛎️ Services</a>
+      <span>MARKETPLACE</span>
+      <a class="nav-link {% nav_active 'device_page' %}" href="{% url 'dashboard:device_page' %}">Device Page</a>
+      <a class="nav-link {% nav_active 'app_web' %}" href="{% url 'dashboard:app_web' %}" target="_blank" rel="noopener">App-Web Window</a>
+      <a class="nav-link {% nav_active 'guest_preview' %}" href="{% url 'dashboard:guest_preview' %}" target="_blank" rel="noopener">Guest QR View</a>
+      <a class="nav-link nav-link-accent {% nav_active 'kitchen' %}" href="{% url 'dashboard:kitchen' %}">+ Kitchen Menu</a>
+      <a class="nav-link {% nav_active 'bar' %}" href="{% url 'dashboard:bar' %}">Bar Menu</a>
+      <a class="nav-link {% nav_active 'services' %}" href="{% url 'dashboard:services' %}">Services</a>
     </div>
     <div class="nav-section">
       <span>ORDERS</span>
-      <a class="nav-link {% nav_active 'orders' %}" href="{% url 'dashboard:orders' %}">🧾 Orders</a>
-      <a class="nav-link {% nav_active 'payments' %}" href="{% url 'dashboard:payments' %}">💳 Payments</a>
-      <a class="nav-link {% nav_active 'workflow' %}" href="{% url 'dashboard:workflow' %}">🛠 Handler Workflow</a>
-      <a class="nav-link {% nav_active 'tracking' %}" href="{% url 'dashboard:tracking' %}">📍 Tracking Updates</a>
+      <a class="nav-link {% nav_active 'payments' %}" href="{% url 'dashboard:payments' %}">Finance Disbursement</a>
+      <a class="nav-link {% nav_active 'orders' %}" href="{% url 'dashboard:orders' %}">Orders</a>
+      <a class="nav-link {% nav_active 'workflow' %}" href="{% url 'dashboard:workflow' %}">Handler Workflow</a>
+      <a class="nav-link {% nav_active 'tracking' %}" href="{% url 'dashboard:tracking' %}">Tracking Updates</a>
     </div>
     <div class="nav-section">
-      <span>IOT SYSTEM</span>
-      <a class="nav-link {% nav_active 'devices' %}" href="{% url 'dashboard:devices' %}">📡 Device Management</a>
-      <a class="nav-link {% nav_active 'web_qr_operation' %}" href="{% url 'dashboard:web_qr_operation' %}">🔲 Web QR Operation</a>
-      <a class="nav-link {% nav_active 'staff' %}" href="{% url 'dashboard:staff' %}">👥 Staff Access</a>
-      <a class="nav-link {% nav_active 'settings' %}" href="{% url 'dashboard:settings' %}">⚙️ Settings</a>
+      <span>MESSAGING</span>
+      <a class="nav-link {% nav_active 'devices' %}" href="{% url 'dashboard:devices' %}">Device Management</a>
+      <a class="nav-link {% nav_active 'web_qr_operation' %}" href="{% url 'dashboard:web_qr_operation' %}">Web QR Operation</a>
+      <a class="nav-link {% nav_active 'staff' %}" href="{% url 'dashboard:staff' %}">Staff Access</a>
+      <a class="nav-link {% nav_active 'settings' %}" href="{% url 'dashboard:settings' %}">Settings</a>
     </div>
   </nav>
 </aside>

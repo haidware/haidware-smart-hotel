@@ -2,7 +2,10 @@
 {% load dashboard_tags %}
 
 {% block action %}
-  <a class="primary-btn" href="{% url 'dashboard:kitchen' %}">Manage Menu</a>
+  <div class="qr-action-row">
+    <a class="primary-btn" href="{% url 'dashboard:guest_preview' %}" target="_blank" rel="noopener">Guest QR View</a>
+    <a class="secondary-btn" href="{% url 'dashboard:kitchen' %}">Manage Menu</a>
+  </div>
 {% endblock %}
 
 {% block content %}
@@ -10,34 +13,32 @@
   <section class="two-col">
     <article class="content-card">
       <h3>Admin Workflow</h3>
-      <div class="workflow-item">
-        <span>1</span>
-        <div><strong>Admin Makes Item Available</strong><p>Only items made available by admin will display on the guest device.</p></div>
-      </div>
-      <div class="workflow-item">
-        <span>2</span>
-        <div><strong>Customer Places Order</strong><p>Kitchen, bar, or service orders enter the admin portal.</p></div>
-      </div>
-      <div class="workflow-item">
-        <span>3</span>
-        <div><strong>Payment Confirmed</strong><p>Paystack or room-billing payment status is checked.</p></div>
-      </div>
-      <div class="workflow-item">
-        <span>4</span>
-        <div><strong>Handler Completes Request</strong><p>Assigned department processes and updates the order status.</p></div>
+      <p class="large-flow-copy">Payment confirmed -> handler review -> process order -> room delivery -> tracking update.</p>
+      <div class="mini-stack">
+        <div class="mini-stack-item">
+          <strong>Availability Control</strong>
+          <p>Only items enabled by admin are shown on guest devices and QR-linked web pages.</p>
+        </div>
+        <div class="mini-stack-item">
+          <strong>Order Visibility</strong>
+          <p>Kitchen, bar, and service requests remain traceable from entry to confirmation.</p>
+        </div>
       </div>
     </article>
     <article class="content-card">
       <h3>Handler Requirements</h3>
       <div class="requirements-box">
-        Every item must include item name, category, price, availability status, image link where needed, and correct department routing.
+        Every menu or service item should include title, department, category, visibility state, accurate pricing, and a clear fulfillment route.
       </div>
       <h3 class="section-gap">Device Preview</h3>
       <p class="muted">Only available items are shown below.</p>
       <div class="preview-list">
         {% for item in preview_items %}
           <div class="preview-item search-target">
-            <div><strong>{{ item.name }}</strong><span>{{ item.category }}</span></div>
+            <div>
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.category }}</span>
+            </div>
             <strong>{{ item.price|currency }}</strong>
           </div>
         {% endfor %}
@@ -47,11 +48,19 @@
   <article class="content-card section-gap">
     <div class="card-head">
       <h3>Recent Orders</h3>
-      <a href="{% url 'dashboard:orders' %}">View all &rarr;</a>
+      <a class="inline-link" href="{% url 'dashboard:orders' %}">View all</a>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Order</th><th>Location</th><th>Department</th><th>Total</th><th>Status</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Location</th>
+            <th>Department</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
         <tbody>
           {% for o in recent_orders %}
             <tr class="search-target">

@@ -1,9 +1,13 @@
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 import io
 import qrcode
+from urllib.parse import quote_plus
+from django.utils import timezone
+from functools import wraps
+from django.contrib.auth.hashers import check_password, make_password
 
-from .models import BankAccount, Device, MenuItem, PaymentRecord, ServiceItem
+from .models import AdminAccount, BankAccount, Device, MenuItem, PaymentRecord, ServiceItem
 from .supabase_sync import SupabaseSync, SupabaseSyncError
 
 KITCHEN_SEED = [
@@ -52,10 +56,10 @@ PAYMENTS_SEED = [
 ]
 
 ORDERS = [
- {"id": "ORD-1024", "location": "Room 205", "department": "Kitchen", "items": "Jollof Rice ×2, Chapman ×1", "total": 9500, "payment": "Paid", "status": "Pending", "handler": "Kitchen User", "updated": "2 minutes ago"},
- {"id": "ORD-1023", "location": "Table 7", "department": "Bar", "items": "Mojito ×2", "total": 7000, "payment": "Paid", "status": "Preparing", "handler": "Bar User", "updated": "5 minutes ago"},
+ {"id": "ORD-1024", "location": "Room 205", "department": "Kitchen", "items": "Jollof Rice x2, Chapman x1", "total": 9500, "payment": "Paid", "status": "Pending", "handler": "Kitchen User", "updated": "2 minutes ago"},
+ {"id": "ORD-1023", "location": "Table 7", "department": "Bar", "items": "Mojito x2", "total": 7000, "payment": "Paid", "status": "Preparing", "handler": "Bar User", "updated": "5 minutes ago"},
  {"id": "ORD-1022", "location": "Room 118", "department": "Housekeeping", "items": "Laundry", "total": 3000, "payment": "Room Billing", "status": "Completed", "handler": "Housekeeping", "updated": "20 minutes ago"},
- {"id": "ORD-1021", "location": "Lounge 2", "department": "Kitchen", "items": "Chicken Alfredo ×1", "total": 6200, "payment": "Pending", "status": "Pending", "handler": "Unassigned", "updated": "25 minutes ago"},
+ {"id": "ORD-1021", "location": "Lounge 2", "department": "Kitchen", "items": "Chicken Alfredo x1", "total": 6200, "payment": "Pending", "status": "Pending", "handler": "Unassigned", "updated": "25 minutes ago"},
 ]
 
 STAFF = [
@@ -102,10 +106,76 @@ def _to_int(value, default=0):
   return default
 
 
+def _unique_reference(reference):
+ ref = reference
+ index = 1
+ while PaymentRecord.objects.filter(reference=ref).exists():
+  ref = f"{reference}-{index}"
+  index += 1
+ return ref
+
+
 def base(title, eyebrow, description):
  return {"page_title": title, "eyebrow": eyebrow, "description": description, "admin_name": "Admin Handler"}
 
 
+def admin_required(view_func):
+ @wraps(view_func)
+ def _wrapped(request, *args, **kwargs):
+  if request.session.get("admin_account_id"):
+   return view_func(request, *args, **kwargs)
+  return redirect(f"/admin-login/?next={quote_plus(request.get_full_path())}")
+ return _wrapped
+
+
+def admin_entry(request):
+ return render(request, "dashboard/admin_entry.html")
+
+
+def admin_signup(request):
+ flash_error = None
+ next_path = request.GET.get("next", request.POST.get("next", "/dashboard/"))
+ if request.method == "POST":
+  name = request.POST.get("name", "").strip()
+  email = request.POST.get("email", "").strip().lower()
+  password = request.POST.get("password", "")
+  confirm_password = request.POST.get("confirm_password", "")
+  if not name or not email or not password:
+   flash_error = "Name, email, and password are required."
+  elif password != confirm_password:
+   flash_error = "Passwords do not match."
+  elif AdminAccount.objects.filter(email=email).exists():
+   flash_error = "Email already exists. Please login instead."
+  else:
+   account = AdminAccount.objects.create(name=name, email=email, password_hash=make_password(password))
+   request.session["admin_account_id"] = account.id
+   request.session["admin_account_name"] = account.name
+   return redirect(next_path)
+ return render(request, "dashboard/admin_signup.html", {"flash_error": flash_error, "next": next_path})
+
+
+def admin_login(request):
+ flash_error = None
+ next_path = request.GET.get("next", request.POST.get("next", "/dashboard/"))
+ if request.method == "POST":
+  email = request.POST.get("email", "").strip().lower()
+  password = request.POST.get("password", "")
+  account = AdminAccount.objects.filter(email=email, is_active=True).first()
+  if not account or not check_password(password, account.password_hash):
+   flash_error = "Invalid login details."
+  else:
+   request.session["admin_account_id"] = account.id
+   request.session["admin_account_name"] = account.name
+   return redirect(next_path)
+ return render(request, "dashboard/admin_login.html", {"flash_error": flash_error, "next": next_path})
+
+
+def admin_logout(request):
+ request.session.flush()
+ return redirect("/admin-login/")
+
+
+@admin_required
 def overview(request):
  _seed_db_once()
  all_menu = list(MenuItem.objects.all())
@@ -117,12 +187,14 @@ def overview(request):
  return render(request, "dashboard/overview.html", c)
 
 
+@admin_required
 def device_page(request):
  c = base("Device Description Page", "SMART HOTEL DEVICE", "Public-facing product description and authorized admin entry foundation.")
  c["features"] = ["Kitchen Menu", "Bar Menu", "Hotel Services", "Bank Transfer Payment", "WiFi IoT Device", "Admin Control"]
  return render(request, "dashboard/device_page.html", c)
 
 
+@admin_required
 def app_web(request):
  _seed_db_once()
  c = base("App-Web Version", "CUSTOMER APP WEB", "Standalone customer web app window synchronized to this admin portal database.")
@@ -130,6 +202,7 @@ def app_web(request):
  return render(request, "dashboard/app_web.html", c)
 
 
+@admin_required
 def kitchen(request):
  _seed_db_once()
  flash_success = None
@@ -182,6 +255,7 @@ def kitchen(request):
  return render(request, "dashboard/menu.html", c)
 
 
+@admin_required
 def bar(request):
  _seed_db_once()
  flash_success = None
@@ -234,6 +308,7 @@ def bar(request):
  return render(request, "dashboard/menu.html", c)
 
 
+@admin_required
 def services(request):
  _seed_db_once()
  flash_success = None
@@ -286,34 +361,55 @@ def services(request):
  return render(request, "dashboard/services.html", c)
 
 
+@admin_required
 def orders(request):
  c = base("Orders", "ORDERS", "Review guest orders by room or table, department, payment state and fulfilment status.")
  c.update(orders=ORDERS, metrics=[{"value": len(ORDERS), "label": "Total Orders"}, {"value": len([o for o in ORDERS if o["status"] == "Pending"]), "label": "Pending"}, {"value": len([o for o in ORDERS if o["status"] == "Preparing"]), "label": "Preparing"}, {"value": len([o for o in ORDERS if o["status"] == "Completed"]), "label": "Completed"}])
  return render(request, "dashboard/orders.html", c)
 
 
+@admin_required
 def payments(request):
  _seed_db_once()
+ flash_success = None
+ flash_error = None
+ if request.method == "POST":
+  action = request.POST.get("action", "").strip().lower()
+  reference = request.POST.get("reference", "").strip().upper()
+  payment = PaymentRecord.objects.filter(reference=reference).first()
+  if action != "confirm":
+   flash_error = "Unsupported payment action."
+  elif not payment:
+   flash_error = f"{reference} not found."
+  elif payment.status == "Confirmed":
+   flash_success = f"{payment.reference} is already confirmed."
+  else:
+   payment.status = "Confirmed"
+   payment.save(update_fields=["status"])
+   flash_success = f"{payment.reference} confirmed."
  all_payments = list(PaymentRecord.objects.all())
  confirmed = [p for p in all_payments if p.status == "Confirmed"]
  pending = [p for p in all_payments if p.status == "Pending Confirmation"]
  c = base("Payment Management", "ORDERS", "Track bank transfer payments via OPay and Access Bank. Confirm transfers once verified in your bank app.")
- c.update(payments=all_payments, bank_accounts=list(BankAccount.objects.filter(active=True)), metrics=[{"value": f"₦{sum(p.amount for p in confirmed):,}", "label": "Confirmed Revenue"}, {"value": f"₦{sum(p.amount for p in pending):,}", "label": "Awaiting Confirmation"}, {"value": len(pending), "label": "Pending Orders"}, {"value": f"₦{sum(p.amount for p in all_payments):,}", "label": "Total Today"}])
+ c.update(payments=all_payments, bank_accounts=list(BankAccount.objects.filter(active=True)), metrics=[{"value": f"₦{sum(p.amount for p in confirmed):,}", "label": "Confirmed Revenue"}, {"value": f"₦{sum(p.amount for p in pending):,}", "label": "Awaiting Confirmation"}, {"value": len(pending), "label": "Pending Orders"}, {"value": f"₦{sum(p.amount for p in all_payments):,}", "label": "Total Today"}], flash_success=flash_success, flash_error=flash_error)
  return render(request, "dashboard/payments.html", c)
 
 
+@admin_required
 def workflow(request):
  c = base("Handler Workflow", "HANDLER WORKFLOW", "Standard operating flow from payment confirmation to service delivery.")
  c["steps"] = [("Payment Confirmed", "Order details enter the admin portal."), ("Department Assignment", "Kitchen, bar, housekeeping or reception receives the request."), ("Preparation", "Staff processes the request and updates its status."), ("Delivery / Completion", "The handler marks the order or request as completed.")]
  return render(request, "dashboard/workflow.html", c)
 
 
+@admin_required
 def tracking(request):
  c = base("Tracking Updates", "TRACKING UPDATES", "Monitor order movement and department responsibility.")
  c["orders"] = ORDERS
  return render(request, "dashboard/tracking.html", c)
 
 
+@admin_required
 def devices(request):
  _seed_db_once()
  all_devices = list(Device.objects.all())
@@ -322,16 +418,19 @@ def devices(request):
  return render(request, "dashboard/devices.html", c)
 
 
+@admin_required
 def staff(request):
  c = base("Staff Access", "STAFF ACCESS", "Manage hotel staff roles and future access permissions.")
  c["staff_members"] = STAFF
  return render(request, "dashboard/staff.html", c)
 
 
+@admin_required
 def web_qr_operation(request):
  _seed_db_once()
  add_success = None
  add_error = None
+ highlighted_room_id = None
  if request.method == "POST":
   action = request.POST.get("action", "add").strip().lower()
   if action == "delete":
@@ -363,6 +462,7 @@ def web_qr_operation(request):
       target.active = active
       target.last_seen = "just now"
       target.save()
+      highlighted_room_id = target.id
       add_success = f"{location} ({device_id}) updated."
   else:
    device_id = request.POST.get("device_id", "").strip().upper()
@@ -374,13 +474,32 @@ def web_qr_operation(request):
     add_error = f"{device_id} already exists."
    else:
     Device.objects.create(id=device_id, location=location, type=device_type, wifi_ssid=_network_for(device_type), ip=_next_ip(), wifi=True, online=True, active=True, last_seen="just now")
+    highlighted_room_id = device_id
     add_success = f"{location} ({device_id}) added. QR is ready."
 
  rooms = list(Device.objects.all())
  active = [r for r in rooms if r.active]
- c = base("Web QR Operation", "WEB QR OPERATION", "Each room has a unique QR code that links guests directly to the web device page — where they can browse menus, order, and pay.")
- c.update(rooms=rooms, add_success=add_success, add_error=add_error, metrics=[{"value": len(rooms), "label": "Total Rooms"}, {"value": len(active), "label": "Active Rooms"}, {"value": len([r for r in rooms if r.online]), "label": "Online Now"}, {"value": len([r for r in rooms if not r.active]), "label": "QR Disabled"}])
+ featured_room = Device.objects.filter(id=highlighted_room_id).first() if highlighted_room_id else (rooms[0] if rooms else None)
+ c = base("Web QR Operation", "WEB QR OPERATION", "Each room has a unique QR code that links guests directly to the web device page - where they can browse menus, order, and pay.")
+ c.update(rooms=rooms, featured_room=featured_room, add_success=add_success, add_error=add_error, metrics=[{"value": len(rooms), "label": "Total Rooms"}, {"value": len(active), "label": "Active Rooms"}, {"value": len([r for r in rooms if r.online]), "label": "Online Now"}, {"value": len([r for r in rooms if not r.active]), "label": "QR Disabled"}])
  return render(request, "dashboard/web_qr_operation.html", c)
+
+
+@admin_required
+def guest_preview(request):
+ _seed_db_once()
+ requested_room_id = request.GET.get('device_id', '').strip().upper()
+ if requested_room_id:
+  selected_room = Device.objects.filter(id=requested_room_id).first()
+  if selected_room:
+   return redirect(f"/guest/{selected_room.id}/")
+ preferred_room = Device.objects.filter(id='DEV-001').first()
+ if preferred_room:
+  return redirect('/guest/DEV-001/')
+ room = Device.objects.filter(active=True).order_by('id').first() or Device.objects.order_by('id').first()
+ if room:
+  return redirect(f"/guest/{room.id}/")
+ return redirect('/web-qr-operation/')
 
 
 def qr_code(request, room_id):
@@ -398,11 +517,62 @@ def qr_code(request, room_id):
 def guest_device(request, room_id):
  _seed_db_once()
  room = Device.objects.filter(id=room_id).first()
- available_menu = list(MenuItem.objects.filter(available=True))
+ submission_error = None
+ submitted_reference = request.GET.get("ref", "").strip()
+ submitted_payment = PaymentRecord.objects.filter(reference=submitted_reference).first() if submitted_reference else None
+ if request.method == "POST":
+  action = request.POST.get("action", "").strip().lower()
+  if action != "submit_transfer":
+   submission_error = "Unsupported guest payment action."
+  else:
+   amount = _to_int(request.POST.get("amount"), 0)
+   method = request.POST.get("method", "").strip()
+   account = request.POST.get("account", "").strip()
+   raw_reference = request.POST.get("reference", "").strip().upper()
+   if amount <= 0:
+    submission_error = "Select at least one item before submitting transfer."
+   elif not method or not account or not raw_reference:
+    submission_error = "Payment details are missing. Please reselect a bank and try again."
+   else:
+    reference = _unique_reference(raw_reference)
+    PaymentRecord.objects.create(
+     reference=reference,
+     order=f"ORD-WEB-{timezone.localtime().strftime('%H%M%S')}",
+     customer=room.location if room else room_id,
+     amount=amount,
+     method=method,
+     account=account,
+     status="Pending Confirmation",
+     date=timezone.localtime().strftime("%b %d, %H:%M"),
+    )
+    return redirect(f"{request.path}?submitted=1&ref={quote_plus(reference)}")
+ kitchen_items = list(MenuItem.objects.filter(section="Kitchen", available=True))
+ bar_items = list(MenuItem.objects.filter(section="Bar", available=True))
  available_services = list(ServiceItem.objects.filter(available=True))
- c = {"page_title": f"{room.location if room else room_id} — Guest Device", "room": room, "room_id": room_id, "menu_items": available_menu, "services": available_services, "bank_accounts": list(BankAccount.objects.filter(active=True))}
+ available_menu = kitchen_items + bar_items
+ popular_items = (kitchen_items[:2] + bar_items[:1] + available_services[:1])[:3]
+ featured_item = kitchen_items[0] if kitchen_items else (bar_items[0] if bar_items else (available_services[0] if available_services else None))
+ initial_page = "homePage"
+ if submitted_payment:
+  initial_page = "successPage" if submitted_payment.status == "Confirmed" else "waitingPage"
+ c = {
+  "page_title": f"{room.location if room else room_id} - Guest Device",
+  "room": room,
+  "room_id": room_id,
+  "menu_items": available_menu,
+  "kitchen_items": kitchen_items,
+  "bar_items": bar_items,
+  "services": available_services,
+  "popular_items": popular_items,
+  "featured_item": featured_item,
+  "bank_accounts": list(BankAccount.objects.filter(active=True)),
+  "payment_submitted": request.GET.get("submitted") == "1",
+  "submitted_reference": submitted_reference,
+  "submitted_payment": submitted_payment,
+  "submission_error": submission_error,
+  "initial_page": initial_page,
+ }
  return render(request, "dashboard/guest_device.html", c)
-
 
 def web_qr_sync_bootstrap(request):
  _seed_db_once()
@@ -415,6 +585,7 @@ def web_qr_sync_bootstrap(request):
  return JsonResponse(payload)
 
 
+@admin_required
 def settings_page(request):
  _seed_db_once()
  return render(request, "dashboard/settings.html", {**base("Settings", "SYSTEM SETTINGS", "Configure hotel identity, bank accounts for guest payments, and IoT operating rules."), "bank_accounts": list(BankAccount.objects.filter(active=True))})
