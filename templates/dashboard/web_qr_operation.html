@@ -1,14 +1,23 @@
 {% extends 'base.html' %}
 {% load dashboard_tags %}
 
+{% block action %}
+  {% if featured_room %}
+    <div class="qr-action-row">
+      <a class="primary-btn" href="{% url 'dashboard:guest_preview' %}?device_id={{ featured_room.id }}" target="_blank" rel="noopener">Guest QR View</a>
+      <a class="secondary-btn" href="{% url 'dashboard:qr_code' featured_room.id %}" download="QR-{{ featured_room.id }}.png">Download Featured QR</a>
+    </div>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   {% include 'includes/metrics.html' %}
 
   <article class="content-card">
     <div class="card-head">
       <div>
-        <h3>Web QR Register</h3>
-        <p class="muted">Create, manage, and download guest-access QR codes for every room or service point.</p>
+        <h3>Corporate Guest QR Register</h3>
+        <p class="muted">Create, manage, and publish guest-access QR destinations for rooms, tables, lounges, and service points from one controlled operations panel.</p>
       </div>
     </div>
 
@@ -23,8 +32,8 @@
         <option>Bar Table</option>
         <option>Lounge</option>
       </select>
-      <div class="form-note">New entries are created as active and immediately get a generated QR code.</div>
-      <button class="primary-btn" type="submit">Add Room/Table</button>
+      <div class="form-note">Every new entry is created as active and immediately receives a working guest QR destination.</div>
+      <button class="primary-btn" type="submit">Register QR Destination</button>
     </form>
 
     {% if add_success %}
@@ -34,14 +43,54 @@
       <div class="flash-error">{{ add_error }}</div>
     {% endif %}
 
+    <section class="two-col section-gap">
+      <div>
+        <h3>Publishing Standard</h3>
+        <div class="mini-stack">
+          <div class="mini-stack-item">
+            <strong>Controlled destination mapping</strong>
+            <p>Each printed QR code resolves to the specific guest journey for its assigned device record, preserving room-by-room and table-by-table accuracy.</p>
+          </div>
+          <div class="mini-stack-item">
+            <strong>Operational readiness</strong>
+            <p>Only active destinations should be distributed to guests. Review QR status here before printing or placing cards in rooms and public areas.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>Current Guest Destination</h3>
+        <div class="requirements-box">
+          Use <strong>Guest QR View</strong> to preview exactly what the guest will see after scanning the QR code. Use <strong>Download QR</strong> when the destination is approved for print or display.
+        </div>
+        {% if featured_room %}
+          <div class="preview-list section-gap">
+            <div class="preview-item search-target">
+              <div>
+                <strong>{{ featured_room.location }}</strong>
+                <span>{{ featured_room.type }} • {{ featured_room.id }}</span>
+              </div>
+              <strong>{% if featured_room.active %}Ready{% else %}Disabled{% endif %}</strong>
+            </div>
+            <div class="preview-item search-target">
+              <div>
+                <strong>Guest route</strong>
+                <span>{% url 'dashboard:guest_device' featured_room.id %}</span>
+              </div>
+              <a class="inline-link" href="{% url 'dashboard:guest_preview' %}?device_id={{ featured_room.id }}" target="_blank" rel="noopener">Open</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
     {% if featured_room %}
-      <div class="qr-preview-bar">
+      <div class="qr-preview-bar section-gap">
         <div class="qr-preview-copy">
-          <strong>Latest QR Preview</strong>
-          <span>{{ featured_room.location }} - {{ featured_room.type }} - {{ featured_room.id }}</span>
+          <strong>Selected QR Preview</strong>
+          <span>{{ featured_room.location }} • {{ featured_room.type }} • {{ featured_room.id }}</span>
         </div>
         <div class="qr-preview-actions">
-          <a class="mini" href="{% url 'dashboard:guest_preview' %}?device_id={{ featured_room.id }}" target="_blank">Guest QR View</a>
+          <a class="mini" href="{% url 'dashboard:guest_preview' %}?device_id={{ featured_room.id }}" target="_blank" rel="noopener">Guest QR View</a>
           <a class="mini" href="{% url 'dashboard:qr_code' featured_room.id %}" download="QR-{{ featured_room.id }}.png">Download QR</a>
         </div>
         <div class="qr-preview-thumb">
@@ -50,7 +99,7 @@
       </div>
     {% endif %}
 
-    <div class="table-wrap">
+    <div class="table-wrap section-gap">
       <table>
         <thead>
           <tr>
@@ -60,7 +109,7 @@
             <th>Type</th>
             <th>Guest QR View</th>
             <th>Status</th>
-            <th>QR Actions</th>
+            <th>Operations</th>
             <th>Edit / Control</th>
           </tr>
         </thead>
@@ -75,7 +124,7 @@
               <td><strong>{{ room.id }}</strong></td>
               <td>{{ room.location }}</td>
               <td>{{ room.type }}</td>
-              <td><a class="inline-link" href="{% url 'dashboard:guest_preview' %}?device_id={{ room.id }}" target="_blank">Open Guest QR View</a></td>
+              <td><a class="inline-link" href="{% url 'dashboard:guest_preview' %}?device_id={{ room.id }}" target="_blank" rel="noopener">Open Guest QR View</a></td>
               <td>
                 <div class="status-stack">
                   <span class="pill {% if room.online %}paid{% else %}failed{% endif %}">{% if room.online %}Online{% else %}Offline{% endif %}</span>
@@ -85,7 +134,7 @@
               <td>
                 <div class="action-stack">
                   <a class="mini" href="{% url 'dashboard:qr_code' room.id %}" download="QR-{{ room.id }}.png">Download</a>
-                  <a class="mini" href="{% url 'dashboard:guest_device' room.id %}" target="_blank">Live Guest Page</a>
+                  <a class="mini" href="{% url 'dashboard:guest_device' room.id %}" target="_blank" rel="noopener">Live Guest Page</a>
                 </div>
               </td>
               <td>
