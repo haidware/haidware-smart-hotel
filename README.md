@@ -42,3 +42,31 @@ Open `http://127.0.0.1:8000/` after the server starts.
 ## Deployment note
 
 For Render deployment, run migrations before starting Gunicorn so the latest models and admin auth flow are available.
+
+### Supabase as primary database
+
+To store admin login, devices, menu, services, and payment confirmations in Supabase, set `DATABASE_URL` to your Supabase Postgres connection string in Render environment variables.
+
+Example format:
+
+`postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres?sslmode=require`
+
+After setting `DATABASE_URL`, redeploy so Django migrates tables into Supabase.
+
+### GitHub-driven deployment with Supabase
+
+This repository now includes `.github/workflows/render-deploy.yml`:
+
+- Runs `python manage.py check` on push to `main`
+- Triggers Render deploy via deploy hook after validation
+
+Add this GitHub repository secret:
+
+- `RENDER_DEPLOY_HOOK_URL` = your Render service deploy hook URL
+
+Also ensure these env vars are set in Render (for Supabase DB):
+
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SYNC_ENABLED`
+- `SUPABASE_SERVICE_ROLE_KEY`
